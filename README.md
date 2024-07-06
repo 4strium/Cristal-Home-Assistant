@@ -1,5 +1,9 @@
 # Cristal-Home-Assistant
 
+<p align="center">
+  <img width="2000" src="https://github.com/4strium/Cristal-Home-Assistant/blob/main/image/cover-1.png?raw=true" alt="Cristal Home Assistant logo">
+</p>
+
 ## Introduction
 Cristal-Home-Assitant aims to be a fully customizable voice assistant adapted to the specific needs of the user, in fact we seek here to make *Cristal* compatible with various and varied APIs.
  
@@ -13,4 +17,4 @@ Cristal-Home-Assitant aims to be a fully customizable voice assistant adapted to
 7. Implement speech recognition in Python on a remote Ubuntu server ([Completed ✅](https://github.com/4strium/Cristal-Home-Assistant/tree/main/Wav-server))
 8. Make the link between the ESP32 and the remote server (To Do 🔜)
 9. Retrieve audio signal via MAX9814 microphone and save wav sound on microSD card (To Do 🔜)
-10. Add other features, suchga as other API's connections (To Do 🔜)
+10. Add other features, such as other API's connections (To Do 🔜)
