@@ -5,7 +5,7 @@
 </p>
 
 ## Introduction
-Cristal-Home-Assitant aims to be a fully customizable voice assistant adapted to the specific needs of the user, in fact we seek here to make *Cristal* compatible with various and varied APIs.
+Cristal-Home-Assitant aims to be a fully customizable voice assistant adapted to the specific needs of the user, in fact I seek here to make *Cristal* compatible with various and varied APIs.
  
 ## Objectives 
 1. Create a complete structure for creating visual expressions using eyes on an OLED screen (128x64) using the SH1106 chip and [U8g2 lib](https://github.com/olikraus/u8g2). (Completed ✅)
