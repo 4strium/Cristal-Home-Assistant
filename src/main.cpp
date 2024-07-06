@@ -25,9 +25,6 @@ char input;
 float current_temp = 300.0;
 int current_wmo, current_dn;
 
-const char* ssid;
-const char* password;
-
 long duration;
 float distanceCm;
 
@@ -380,16 +377,25 @@ void setup(void) {
   while (!Serial.available()) {
     // Wait for user input
   }
-  ssid = Serial.readString().c_str();
+  String ssid = Serial.readString();
 
   Serial.println("Entrez le mot-de-passe de votre réseau Wifi :");
   while (!Serial.available()) {
     // Wait for user input
   }
-  password = Serial.readString().c_str();
+  String password = Serial.readString();
+
+  // Utilisez les objets String directement, ou copiez leur contenu si nécessaire
+  // Exemple : utiliser les méthodes c_str() lorsqu'il est sûr que les objets String restent en scope
+  const char* ssid_cstr = ssid.c_str();
+  const char* password_cstr = password.c_str();
+
+  // Utilisation des valeurs
+  Serial.println("SSID: " + ssid);
+  Serial.println("Password: " + password);
 
   Serial.println("Connexion au réseau WiFi...");
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid_cstr, password_cstr);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -404,7 +410,7 @@ void loop(void) {
 
   count_inactivity++;
   float dist = get_distance_ultrasonic();
-  if ((dist < 15.0) || (dist>600.0))
+  if (dist < 15.0)
   {
     count_inactivity--;
 
@@ -413,7 +419,7 @@ void loop(void) {
 
     while (analogRead(BTN_PIN) > 100) {
       float dist = get_distance_ultrasonic();
-      if (!((dist < 15.0) || (dist>600.0))){break;}
+      if (dist > 15.0){break;}
       delay(300);
     }
 
@@ -430,7 +436,6 @@ void loop(void) {
         vari_blue(parameter);
         vTaskDelete(NULL); }, "task2", 2048, NULL, 5, NULL);
       }
-      delay(2000);
     }
     while (analogRead(BTN_PIN) < 100)
     {
@@ -448,6 +453,7 @@ void loop(void) {
           Timer(600);
         }
       }
+      delay(2000);
     }
 
     if (current_temp != 300.0)
