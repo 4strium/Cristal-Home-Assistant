@@ -1,7 +1,7 @@
 # Cristal-Home-Assistant
 
 <p align="center">
-  <img width="2000" src="https://github.com/4strium/Cristal-Home-Assistant/blob/main/image/cover-1.png?raw=true" alt="Cristal Home Assistant logo">
+  <img src="https://github.com/4strium/Cristal-Home-Assistant/blob/main/image/cover-1.png?raw=true" alt="Cristal Home Assistant logo">
 </p>
 
 ## Introduction
