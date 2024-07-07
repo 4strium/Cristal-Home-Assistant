@@ -1,4 +1,4 @@
-# Cristal-Home-Assistant
+# Cristal Home Assistant
 
 <p align="center">
   <img src="https://github.com/4strium/Cristal-Home-Assistant/blob/main/image/cover-1.png?raw=true" alt="Cristal Home Assistant logo">
