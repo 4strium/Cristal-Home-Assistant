@@ -8,7 +8,7 @@
 #include <biticons.cpp>
 
 #define I2C_SDA 27
-#define I2C_SCL 26
+#define I2C_SCL 22
 #define RED_LED 14
 #define BLUE_LED 12
 #define BTN_PIN 4
