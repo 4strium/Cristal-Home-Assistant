@@ -40,22 +40,72 @@ int main() {
         return -1;
     }
 
-    // Accepter la connexion entrante
-    if ((newSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &addrSize)) < 0) {
-        std::cerr << "Accepter la connexion a échoué" << std::endl;
-        return -1;
+    std::cout << "Serveur en écoute sur le port " << PORT << std::endl;
+
+    while (true) {
+        std::cout << "En attente de connexion..." << std::endl;
+        newSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &addrSize);
+        if (newSocket < 0) {
+            std::cerr << "Accepter la connexion a échoué" << std::endl;
+            continue;
+        }
+
+        std::cout << "Connexion acceptée" << std::endl;
+
+        // Recevoir le fichier
+        ssize_t bytesRead;
+        std::ofstream outfile("enregistrement.wav", std::ios::binary);
+        if (!outfile.is_open()) {
+            std::cerr << "Erreur d'ouverture du fichier enregistrement.wav" << std::endl;
+            close(newSocket);
+            continue;
+        }
+
+        while ((bytesRead = recv(newSocket, buffer, sizeof(buffer), 0)) > 0) {
+            std::cout << "Bytes reçus : " << bytesRead << std::endl;
+            outfile.write(buffer, bytesRead);
+        }
+        outfile.close();
+        std::cout << "Fichier reçu avec succès" << std::endl;
+
+        // Exécuter le script Python
+        std::cout << "Exécution du script Python..." << std::endl;
+        int result = system("python3 recognize-fr.py");
+        if (result != 0) {
+            std::cerr << "Échec de l'exécution du script Python" << std::endl;
+        } else {
+            std::cout << "Script Python exécuté avec succès" << std::endl;
+        }
+
+        // Lire le contenu de rapport.txt
+        std::ifstream reportFile("rapport.txt");
+        if (!reportFile.is_open()) {
+            std::cerr << "Échec de l'ouverture de rapport.txt" << std::endl;
+            close(newSocket); // Fermer le socket en cas d'échec
+            continue; // Passer à la prochaine connexion
+        }
+        std::stringstream reportBuffer;
+        reportBuffer << reportFile.rdbuf();
+        std::string reportContent = reportBuffer.str();
+        reportFile.close();
+
+        // Afficher le contenu de rapport.txt pour débogage
+        std::cout << "Contenu de rapport.txt : " << reportContent << std::endl;
+
+        // Envoyer le contenu de rapport.txt au client
+        ssize_t sentBytes = send(newSocket, reportContent.c_str(), reportContent.size(), 0);
+        if (sentBytes < 0) {
+            std::cerr << "Échec de l'envoi du rapport" << std::endl;
+        } else {
+            std::cout << "Rapport envoyé avec succès (" << sentBytes << " bytes)" << std::endl;
+        }
+
+        // Fermer le socket après l'envoi du rapport
+        close(newSocket);
     }
 
-    // Recevoir le fichier
-    ssize_t bytesRead;
-    std::ofstream outfile("enregistrement.wav", std::ios::binary);
-    while ((bytesRead = recv(newSocket, buffer, sizeof(buffer), 0)) > 0) {
-        outfile.write(buffer, bytesRead);
-    }
-    std::cout << "Fichier reçu avec succès" << std::endl;
-
-    // Fermer les sockets
-    close(newSocket);
+    // Fermer le socket serveur (en théorie, cette ligne ne sera jamais exécutée)
     close(serverSocket);
     return 0;
 }
+
