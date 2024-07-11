@@ -11,7 +11,7 @@
 #define MAX_CONNECTIONS 5
 
 int main() {
-    int serverSocket, newSocket;
+    int serverSocket, recSocket, sendSocket;
     struct sockaddr_in serverAddr, clientAddr;
     socklen_t addrSize = sizeof(clientAddr);
     char buffer[1024] = {0};
@@ -44,9 +44,9 @@ int main() {
 
     while (true) {
         std::cout << "En attente de connexion..." << std::endl;
-        newSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &addrSize);
-        if (newSocket < 0) {
-            std::cerr << "Accepter la connexion a échoué" << std::endl;
+        recSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &addrSize);
+        if (recSocket < 0) {
+            std::cerr << "La connexion utile à la réception a échouée" << std::endl;
             continue;
         }
 
@@ -57,16 +57,24 @@ int main() {
         std::ofstream outfile("enregistrement.wav", std::ios::binary);
         if (!outfile.is_open()) {
             std::cerr << "Erreur d'ouverture du fichier enregistrement.wav" << std::endl;
-            close(newSocket);
+            close(recSocket);
             continue;
         }
 
-        while ((bytesRead = recv(newSocket, buffer, sizeof(buffer), 0)) > 0) {
-            std::cout << "Bytes reçus : " << bytesRead << std::endl;
+        while ((bytesRead = recv(recSocket, buffer, sizeof(buffer), 0)) > 0) {
             outfile.write(buffer, bytesRead);
         }
         outfile.close();
         std::cout << "Fichier reçu avec succès" << std::endl;
+
+        // Fermer le socket après la réception du fichier audio
+        close(recSocket);
+
+        sendSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &addrSize);
+        if (sendSocket < 0) {
+            std::cerr << "La connexion utile à l'envoi a échouée" << std::endl;
+            continue;
+        }
 
         // Exécuter le script Python
         std::cout << "Exécution du script Python..." << std::endl;
@@ -81,7 +89,7 @@ int main() {
         std::ifstream reportFile("rapport.txt");
         if (!reportFile.is_open()) {
             std::cerr << "Échec de l'ouverture de rapport.txt" << std::endl;
-            close(newSocket); // Fermer le socket en cas d'échec
+            close(sendSocket); // Fermer le socket en cas d'échec
             continue; // Passer à la prochaine connexion
         }
         std::stringstream reportBuffer;
@@ -89,23 +97,18 @@ int main() {
         std::string reportContent = reportBuffer.str();
         reportFile.close();
 
-        // Afficher le contenu de rapport.txt pour débogage
-        std::cout << "Contenu de rapport.txt : " << reportContent << std::endl;
-
         // Envoyer le contenu de rapport.txt au client
-        ssize_t sentBytes = send(newSocket, reportContent.c_str(), reportContent.size(), 0);
+        ssize_t sentBytes = send(sendSocket, reportContent.c_str(), reportContent.size(), 0);
         if (sentBytes < 0) {
             std::cerr << "Échec de l'envoi du rapport" << std::endl;
         } else {
             std::cout << "Rapport envoyé avec succès (" << sentBytes << " bytes)" << std::endl;
         }
 
-        // Fermer le socket après l'envoi du rapport
-        close(newSocket);
+        close(sendSocket);
     }
 
     // Fermer le socket serveur (en théorie, cette ligne ne sera jamais exécutée)
     close(serverSocket);
     return 0;
 }
-
