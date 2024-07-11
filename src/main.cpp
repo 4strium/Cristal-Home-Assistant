@@ -8,10 +8,10 @@
 #include <biticons.cpp>
 
 #define I2C_SDA 27
-#define I2C_SCL 26
+#define I2C_SCL 22
 #define RED_LED 14
 #define BLUE_LED 12
-#define BTN_PIN 33
+#define BTN_PIN 4
 #define TRIG_PIN 5
 #define ECHO_PIN 18
 #define SOUND_SPEED 0.034
@@ -352,7 +352,6 @@ float get_distance_ultrasonic(){
   
   // Calculate the distance
   float distanceCm = duration * SOUND_SPEED/2;
-  Serial.println(distanceCm);
   return distanceCm;
 }
 
@@ -371,7 +370,7 @@ void setup(void) {
   pinMode(BLUE_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
 
-  pinMode(BTN_PIN, INPUT_PULLUP);
+  pinMode(BTN_PIN, INPUT);
 
   Serial.println("Entrez le SSID de votre réseau Wifi :");
   while (!Serial.available()) {
@@ -408,6 +407,8 @@ void setup(void) {
 
 void loop(void) {
 
+  Serial.println(digitalRead(BTN_PIN));
+
   count_inactivity++;
   float dist = get_distance_ultrasonic();
   if (dist < 15.0)
@@ -417,13 +418,13 @@ void loop(void) {
     e1.det_eyes_in();
     actived = true;
 
-    while (analogRead(BTN_PIN) > 100) {
+    while (digitalRead(BTN_PIN) == LOW) {
       float dist = get_distance_ultrasonic();
       if (dist > 15.0){break;}
       delay(300);
     }
 
-    if (analogRead(BTN_PIN) < 100)
+    if (digitalRead(BTN_PIN) == HIGH)
     {
       if (e1.step == 1)
       {
@@ -437,7 +438,7 @@ void loop(void) {
         vTaskDelete(NULL); }, "task2", 2048, NULL, 5, NULL);
       }
     }
-    while (analogRead(BTN_PIN) < 100)
+    while (digitalRead(BTN_PIN) == HIGH)
     {
       if (Serial.available())
       {
