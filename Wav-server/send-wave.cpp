@@ -77,12 +77,32 @@ void setup() {
       break;
     }
   }
-
-  // Fermeture du socket et du fichier
   file.close();
+
+  // Fermer l'écriture du socket pour indiquer la fin de l'envoi du fichier
+  client.flush();
   client.stop();
 
-  Serial.println("File sent successfully");
+  delay(300);
+
+  // Reconnecter pour recevoir le rapport
+  if (!client.connect(serverIP, serverPort)) {
+    Serial.println("Connection to server failed");
+    return;
+  }
+
+  // Réception du contenu de rapport.txt
+  Serial.println("Waiting for the server's report...");
+  while (client.connected() || client.available()) {
+    if (client.available()) {
+      String report = client.readStringUntil('\n');  // Read until new line character
+      Serial.print(report);  // Print the report content to the Serial monitor
+    }
+  }
+  
+  // Fermeture du socket
+  client.stop();
+  Serial.println("\nFile sent and report received successfully");
 }
 
 void loop() {}
