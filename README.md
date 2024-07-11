@@ -15,6 +15,6 @@ Cristal-Home-Assitant aims to be a fully customizable voice assistant adapted to
 5. Added OpenWeather API connection, and display of informations on the screen (Completed ✅)
 6. Added Ultrasonic sensor to manage the system's sleep based on human movements around the device. (Partially Completed 🔀 (not stable))
 7. Implement speech recognition in Python on a remote Ubuntu server ([Completed ✅](https://github.com/4strium/Cristal-Home-Assistant/tree/main/Wav-server))
-8. Make the link between the ESP32 and the remote server (To Do 🔜)
+8. Make the link between the ESP32 and the remote server ([Completed ✅](https://github.com/4strium/Cristal-Home-Assistant/tree/main/Wav-server))
 9. Retrieve audio signal via MAX9814 microphone and save wav sound on microSD card (To Do 🔜)
 10. Add other features, such as other API's connections (To Do 🔜)
