@@ -1,0 +1,2 @@
+Activer l'environnement virtuel Python :
+source cristal-env/bin/activate

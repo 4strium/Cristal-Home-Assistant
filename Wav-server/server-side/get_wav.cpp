@@ -40,51 +40,22 @@ int main() {
         return -1;
     }
 
-    std::cout << "Serveur en écoute sur le port " << PORT << std::endl;
-
-    while (true) {
-        newSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &addrSize);
-        if (newSocket < 0) {
-            std::cerr << "Accepter la connexion a échoué" << std::endl;
-            continue;
-        }
-
-        // Recevoir le fichier
-        ssize_t bytesRead;
-        std::ofstream outfile("enregistrement.wav", std::ios::binary);
-        while ((bytesRead = recv(newSocket, buffer, sizeof(buffer), 0)) > 0) {
-            outfile.write(buffer, bytesRead);
-        }
-        outfile.close();
-        std::cout << "Fichier reçu avec succès" << std::endl;
-
-        // Exécuter le script Python
-        int result = system("python3 recognize-fr.py");
-        if (result != 0) {
-            std::cerr << "Échec de l'exécution du script Python" << std::endl;
-        }
-
-        // Lire le contenu de rapport.txt
-        std::ifstream reportFile("rapport.txt");
-        if (!reportFile) {
-            std::cerr << "Échec de l'ouverture de rapport.txt" << std::endl;
-            close(newSocket); // Fermer le socket en cas d'échec
-            continue; // Passer à la prochaine connexion
-        }
-        std::stringstream reportBuffer;
-        reportBuffer << reportFile.rdbuf();
-        std::string reportContent = reportBuffer.str();
-        reportFile.close();
-
-        // Envoyer le contenu de rapport.txt au client
-        send(newSocket, reportContent.c_str(), reportContent.size(), 0);
-        std::cout << "Rapport envoyé avec succès" << std::endl;
-
-        // Fermer le socket après l'envoi du rapport
-        close(newSocket);
+    // Accepter la connexion entrante
+    if ((newSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &addrSize)) < 0) {
+        std::cerr << "Accepter la connexion a échoué" << std::endl;
+        return -1;
     }
 
-    // Fermer le socket serveur (en théorie, cette ligne ne sera jamais exécutée)
+    // Recevoir le fichier
+    ssize_t bytesRead;
+    std::ofstream outfile("enregistrement.wav", std::ios::binary);
+    while ((bytesRead = recv(newSocket, buffer, sizeof(buffer), 0)) > 0) {
+        outfile.write(buffer, bytesRead);
+    }
+    std::cout << "Fichier reçu avec succès" << std::endl;
+
+    // Fermer les sockets
+    close(newSocket);
     close(serverSocket);
     return 0;
 }
