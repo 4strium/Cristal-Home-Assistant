@@ -6,13 +6,13 @@
 #include <open-meteo.h>
 #include <WiFi.h>
 #include <biticons.cpp>
+#include <wavserv.h>
 
 #define I2C_SDA 27
 #define I2C_SCL 22
-#define RED_LED 14
 #define BLUE_LED 12
 #define BTN_PIN 4
-#define TRIG_PIN 5
+#define TRIG_PIN 15
 #define ECHO_PIN 18
 #define SOUND_SPEED 0.034
 
@@ -368,7 +368,6 @@ void setup(void) {
   pinMode(ECHO_PIN, INPUT);
 
   pinMode(BLUE_LED, OUTPUT);
-  pinMode(RED_LED, OUTPUT);
 
   pinMode(BTN_PIN, INPUT);
 
@@ -443,13 +442,13 @@ void loop(void) {
       if (Serial.available())
       {
         input_refl = Serial.read();
-        if (input_refl == '9')
+        if (recowav() = String("météo"))
         {
           current_temp = get_temp();
           current_wmo = get_WMO();
           current_dn = get_day_night();
         }
-        if (input_refl == '8')
+        if (recowav() = String("minuteur"))
         {
           Timer(600);
         }

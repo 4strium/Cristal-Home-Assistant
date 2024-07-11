@@ -18,3 +18,33 @@ Cristal-Home-Assitant aims to be a fully customizable voice assistant adapted to
 8. Make the link between the ESP32 and the remote server ([Completed ✅](https://github.com/4strium/Cristal-Home-Assistant/tree/main/Wav-server))
 9. Retrieve audio signal via MAX9814 microphone and save wav sound on microSD card (To Do 🔜)
 10. Add other features, such as other API's connections (To Do 🔜)
+
+## Wiring
+### Micro SD Card Module :
+* 3.3 V
+* MISO : GPIO 19
+* CLK : GPIO 18
+* MOSI : GPIO 23
+* CS : GPIO 5
+* GND
+
+### Ultrasonic sensor :
+* VCC : 5V
+* Trig : GPIO 15
+* Echo : GPIO 2
+* GND
+
+### OLED Display :
+* VDD : 5V
+* GND
+* SCK : GPIO 22
+* SDA : GPIO 27
+
+### Blue LED'S :
+* GPIO 12
+* GND 
+
+### Push Button :
+* 3.3 V
+* GPIO 4
+* GND
