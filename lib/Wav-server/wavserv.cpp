@@ -14,7 +14,7 @@ const int serverPort = 8080;
 #define MOSI 23
 #define CS 5
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
 
 String recowav(){
     // Initialisation du SPI et de la carte SD

@@ -442,23 +442,24 @@ void loop(void) {
     }
     while (digitalRead(BTN_PIN) == HIGH)
     {
-      if (Serial.available())
-      {
-        input_refl = Serial.read();
-        Serial.println(recowav());
-        if (recowav() = String("météo"))
+        delay(1000);
+        String word = recowav();
+        Serial.println(word);
+        if (word == String("météo"))
         {
+          Serial.println("test");
           current_temp = get_temp();
           current_wmo = get_WMO();
           current_dn = get_day_night();
+          break;
         }
-        if (recowav() = String("minuteur"))
+        else if (word == String("minuteur"))
         {
           Timer(600);
+          break;
         }
-      }
-      delay(2000);
     }
+    delay(2000);
 
     if (current_temp != 300.0)
     {
