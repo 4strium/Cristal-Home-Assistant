@@ -13,7 +13,7 @@
 #define BLUE_LED 12
 #define BTN_PIN 4
 #define TRIG_PIN 15
-#define ECHO_PIN 18
+#define ECHO_PIN 2
 #define SOUND_SPEED 0.034
 
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R2, /* reset=*/ U8X8_PIN_NONE);
@@ -440,14 +440,13 @@ void loop(void) {
         vTaskDelete(NULL); }, "task2", 2048, NULL, 5, NULL);
       }
     }
+    delay(300);
     while (digitalRead(BTN_PIN) == HIGH)
     {
-        delay(1000);
         String word = recowav();
         Serial.println(word);
         if (word == String("météo"))
         {
-          Serial.println("test");
           current_temp = get_temp();
           current_wmo = get_WMO();
           current_dn = get_day_night();
@@ -459,7 +458,6 @@ void loop(void) {
           break;
         }
     }
-    delay(2000);
 
     if (current_temp != 300.0)
     {

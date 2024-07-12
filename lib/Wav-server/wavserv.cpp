@@ -69,7 +69,8 @@ String recowav(){
     while (client.connected() || client.available()) {
         if (client.available()) {
             String report = client.readStringUntil('\n');  // Read until new line character
-            Serial.print(report);  // Print the report content to the Serial monitor
+            client.stop();
+            return report;
         }
     }
   
