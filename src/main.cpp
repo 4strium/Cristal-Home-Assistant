@@ -410,6 +410,7 @@ void loop(void) {
 
   count_inactivity++;
   float dist = get_distance_ultrasonic();
+  Serial.println(dist);
   if (dist < 15.0)
   {
     count_inactivity--;
@@ -419,6 +420,8 @@ void loop(void) {
 
     while (digitalRead(BTN_PIN) == LOW) {
       float dist = get_distance_ultrasonic();
+      Serial.println(dist);
+      Serial.println(digitalRead(BTN_PIN));
       if (dist > 15.0){break;}
       delay(300);
     }
@@ -442,6 +445,7 @@ void loop(void) {
       if (Serial.available())
       {
         input_refl = Serial.read();
+        Serial.println(recowav());
         if (recowav() = String("météo"))
         {
           current_temp = get_temp();

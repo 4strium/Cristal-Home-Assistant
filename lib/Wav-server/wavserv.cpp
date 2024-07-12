@@ -21,26 +21,26 @@ String recowav(){
     SPI.begin(SCK, MISO, MOSI, CS);
     if (!SD.begin(CS)) {
         Serial.println("Card Mount Failed");
-        return;
+        return "error";
     }
     uint8_t cardType = SD.cardType();
     if (cardType == CARD_NONE) {
         Serial.println("No SD card attached");
-        return;
+        return "error";
     }
 
     // Création du socket
     WiFiClient client;
     if (!client.connect(serverIP, serverPort)) {
         Serial.println("Connection to server failed");
-        return;
+        return "error";
     }
 
     // Ouverture du fichier .wav à envoyer
     File file = SD.open("/audio.wav");
     if (!file) {
         Serial.println("Failed to open file for reading");
-        return;
+        return "error";
     }
 
     // Lecture et envoi du fichier .wav
@@ -61,7 +61,7 @@ String recowav(){
     // Reconnecter pour recevoir le rapport
     if (!client.connect(serverIP, serverPort)) {
         Serial.println("Connection to server failed");
-        return;
+        return "error";
     }
 
     // Réception du contenu de rapport.txt
