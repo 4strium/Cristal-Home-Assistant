@@ -10,8 +10,12 @@ const int chipSelect = 5;
 #define SAMPLE_RATE 16000 // Fréquence d'échantillonnage
 #define RECORD_DURATION 4 // Durée en secondes
 
+// Taille de la fenêtre du filtre médian
+#define MEDIAN_FILTER_WINDOW 5
+
 // Fichier sur la carte SD
 File wavFile;
+int16_t medianFilterBuffer[MEDIAN_FILTER_WINDOW];
 
 void writeWavHeader(File file, int sampleRate, int bitsPerSample, int channels, int dataSize) {
   byte header[44];
@@ -58,6 +62,32 @@ void updateWavHeader(File &file) {
   file.write((byte)((fileSize - 44) & 0xFF)); file.write((byte)(((fileSize - 44) >> 8) & 0xFF)); file.write((byte)(((fileSize - 44) >> 16) & 0xFF)); file.write((byte)(((fileSize - 44) >> 24) & 0xFF));
 } 
 
+int16_t medianFilter(int16_t newValue) {
+  // Ajouter la nouvelle valeur dans le buffer
+  for (int i = MEDIAN_FILTER_WINDOW - 1; i > 0; i--) {
+    medianFilterBuffer[i] = medianFilterBuffer[i - 1];
+  }
+  medianFilterBuffer[0] = newValue;
+
+  // Créer une copie du buffer pour le trier
+  int16_t sortedBuffer[MEDIAN_FILTER_WINDOW];
+  memcpy(sortedBuffer, medianFilterBuffer, sizeof(medianFilterBuffer));
+
+  // Trier le buffer
+  for (int i = 0; i < MEDIAN_FILTER_WINDOW - 1; i++) {
+    for (int j = i + 1; j < MEDIAN_FILTER_WINDOW; j++) {
+      if (sortedBuffer[i] > sortedBuffer[j]) {
+        int16_t temp = sortedBuffer[i];
+        sortedBuffer[i] = sortedBuffer[j];
+        sortedBuffer[j] = temp;
+      }
+    }
+  }
+
+  // Retourner la valeur médiane
+  return sortedBuffer[MEDIAN_FILTER_WINDOW / 2];
+}
+
 void record_mic() {
   if (!SD.begin(chipSelect)) {
     Serial.println("Erreur d'initialisation de la carte SD!");
@@ -83,6 +113,7 @@ void record_mic() {
   for (int i = 0; i < samples; i++) {
     sample = analogRead(ADC_PIN);
     sample = (sample - 2048) * 16; // Ajuster l'échelle de 12 bits à 16 bits
+    sample = medianFilter(sample);
     wavFile.write((byte*)&sample, sizeof(sample));
     delayMicroseconds(1000000 / SAMPLE_RATE);
   }
