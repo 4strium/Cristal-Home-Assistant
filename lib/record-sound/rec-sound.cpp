@@ -2,18 +2,16 @@
 #include <SD.h>
 #include <rec-sound.h>
 
-// Définir la broche d'entrée pour le MAX9814
-const int micPin = 35;
-
 // Configuration de la carte SD
 const int chipSelect = 5;
 
-// Durée de l'enregistrement en secondes
-const int recordDuration = 4;
-const int sampleRate = 32000;  // Taux d'échantillonnage en Hz (ex: 16000 échantillons par seconde)
+// Paramètres ADC
+#define ADC_PIN 35
+#define SAMPLE_RATE 16000 // Fréquence d'échantillonnage
+#define RECORD_DURATION 4 // Durée en secondes
 
 // Fichier sur la carte SD
-File audioFile;
+File wavFile;
 
 void writeWavHeader(File file, int sampleRate, int bitsPerSample, int channels, int dataSize) {
   byte header[44];
@@ -52,41 +50,47 @@ void writeWavHeader(File file, int sampleRate, int bitsPerSample, int channels, 
   file.write(header, sizeof(header));
 }
 
+void updateWavHeader(File &file) {
+  int fileSize = file.size();
+  file.seek(4);
+  file.write((byte)((fileSize - 8) & 0xFF)); file.write((byte)(((fileSize - 8) >> 8) & 0xFF)); file.write((byte)(((fileSize - 8) >> 16) & 0xFF)); file.write((byte)(((fileSize - 8) >> 24) & 0xFF));
+  file.seek(40);
+  file.write((byte)((fileSize - 44) & 0xFF)); file.write((byte)(((fileSize - 44) >> 8) & 0xFF)); file.write((byte)(((fileSize - 44) >> 16) & 0xFF)); file.write((byte)(((fileSize - 44) >> 24) & 0xFF));
+} 
+
 void record_mic() {
   if (!SD.begin(chipSelect)) {
     Serial.println("Erreur d'initialisation de la carte SD!");
     while (1);
   }
 
-  Serial.println("Carte SD initialisée.");
-  audioFile = SD.open("/audio.wav", FILE_WRITE);
-  if (!audioFile) {
-    Serial.println("Erreur de création du fichier audio!");
-    while (1);
+  // Créer un nouveau fichier WAV
+  wavFile = SD.open("/audio.wav", FILE_WRITE);
+  if (!wavFile) {
+    Serial.println("Erreur lors de la création du fichier WAV");
+    return;
   }
+
 
   // Préparer l'en-tête WAV sans la taille des données, qui sera mise à jour après l'enregistrement
-  writeWavHeader(audioFile, sampleRate, 16, 1, 0);
+  writeWavHeader(wavFile, SAMPLE_RATE, 16, 1, 0);
 
   Serial.println("Début de l'enregistrement...");
-  unsigned long startTime = millis();
-  int dataSize = 0;
+  
+  int samples = RECORD_DURATION * SAMPLE_RATE;
+  int16_t sample;
 
-  while (millis() - startTime < recordDuration * 1000) {
-    int sample = analogRead(micPin);
-    // Convertir la valeur en format 16 bits
-    byte audioSampleLow = sample & 0xFF;
-    byte audioSampleHigh = (sample >> 8) & 0xFF;
-
-    // Écrire l'échantillon dans le fichier
-    audioFile.write(audioSampleLow);
-    audioFile.write(audioSampleHigh);
-    dataSize += 2;
-
-    delayMicroseconds(1000000 / sampleRate);
+  for (int i = 0; i < samples; i++) {
+    sample = analogRead(ADC_PIN);
+    sample = (sample - 2048) * 16; // Ajuster l'échelle de 12 bits à 16 bits
+    wavFile.write((byte*)&sample, sizeof(sample));
+    delayMicroseconds(1000000 / SAMPLE_RATE);
   }
 
-  audioFile.close();
+  // Mettre à jour la taille des données dans l'entête WAV
+  updateWavHeader(wavFile);
+
+  wavFile.close();
 
   Serial.println("Enregistrement terminé.");
 }
