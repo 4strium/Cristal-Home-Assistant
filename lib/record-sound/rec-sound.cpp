@@ -10,49 +10,84 @@ const int chipSelect = 5;
 
 // Durée de l'enregistrement en secondes
 const int recordDuration = 4;
-const int sampleRate = 16000;  // Taux d'échantillonnage en Hz (ex: 16000 échantillons par seconde)
+const int sampleRate = 32000;  // Taux d'échantillonnage en Hz (ex: 16000 échantillons par seconde)
 
 // Fichier sur la carte SD
 File audioFile;
 
+void writeWavHeader(File file, int sampleRate, int bitsPerSample, int channels, int dataSize) {
+  byte header[44];
+  long totalDataLen = dataSize + 36;
+  long audioDataLen = dataSize;
+  long longSampleRate = sampleRate;
+  long byteRate = sampleRate * channels * bitsPerSample / 8;
+
+  // ChunkID "RIFF"
+  header[0] = 'R'; header[1] = 'I'; header[2] = 'F'; header[3] = 'F';
+  // ChunkSize
+  header[4] = (byte) (totalDataLen & 0xff); header[5] = (byte) ((totalDataLen >> 8) & 0xff); header[6] = (byte) ((totalDataLen >> 16) & 0xff); header[7] = (byte) ((totalDataLen >> 24) & 0xff);
+  // Format "WAVE"
+  header[8] = 'W'; header[9] = 'A'; header[10] = 'V'; header[11] = 'E';
+  // Subchunk1ID "fmt "
+  header[12] = 'f'; header[13] = 'm'; header[14] = 't'; header[15] = ' ';
+  // Subchunk1Size (16 for PCM)
+  header[16] = 16; header[17] = 0; header[18] = 0; header[19] = 0;
+  // AudioFormat (1 for PCM)
+  header[20] = 1; header[21] = 0;
+  // NumChannels
+  header[22] = channels; header[23] = 0;
+  // SampleRate
+  header[24] = (byte) (longSampleRate & 0xff); header[25] = (byte) ((longSampleRate >> 8) & 0xff); header[26] = (byte) ((longSampleRate >> 16) & 0xff); header[27] = (byte) ((longSampleRate >> 24) & 0xff);
+  // ByteRate
+  header[28] = (byte) (byteRate & 0xff); header[29] = (byte) ((byteRate >> 8) & 0xff); header[30] = (byte) ((byteRate >> 16) & 0xff); header[31] = (byte) ((byteRate >> 24) & 0xff);
+  // BlockAlign
+  header[32] = (byte) (channels * bitsPerSample / 8); header[33] = 0;
+  // BitsPerSample
+  header[34] = bitsPerSample; header[35] = 0;
+  // Subchunk2ID "data"
+  header[36] = 'd'; header[37] = 'a'; header[38] = 't'; header[39] = 'a';
+  // Subchunk2Size
+  header[40] = (byte) (audioDataLen & 0xff); header[41] = (byte) ((audioDataLen >> 8) & 0xff); header[42] = (byte) ((audioDataLen >> 16) & 0xff); header[43] = (byte) ((audioDataLen >> 24) & 0xff);
+
+  file.write(header, sizeof(header));
+}
+
 void record_mic() {
-  // Initialisation de la carte SD
   if (!SD.begin(chipSelect)) {
     Serial.println("Erreur d'initialisation de la carte SD!");
     while (1);
   }
 
   Serial.println("Carte SD initialisée.");
-
-  // Créer un nouveau fichier pour enregistrer les données audio
   audioFile = SD.open("/audio.wav", FILE_WRITE);
   if (!audioFile) {
     Serial.println("Erreur de création du fichier audio!");
     while (1);
   }
 
-  Serial.println("Fichier audio créé.");
+  // Préparer l'en-tête WAV sans la taille des données, qui sera mise à jour après l'enregistrement
+  writeWavHeader(audioFile, sampleRate, 16, 1, 0);
 
-  // Démarrer l'enregistrement
   Serial.println("Début de l'enregistrement...");
   unsigned long startTime = millis();
+  int dataSize = 0;
 
   while (millis() - startTime < recordDuration * 1000) {
-    // Lire la valeur analogique du microphone
     int sample = analogRead(micPin);
-    
-    // Convertir la valeur en format 8 bits (optionnel, selon le format désiré)
-    byte audioSample = map(sample, 0, 4095, 0, 255);
+    // Convertir la valeur en format 16 bits
+    byte audioSampleLow = sample & 0xFF;
+    byte audioSampleHigh = (sample >> 8) & 0xFF;
 
     // Écrire l'échantillon dans le fichier
-    audioFile.write(audioSample);
+    audioFile.write(audioSampleLow);
+    audioFile.write(audioSampleHigh);
+    dataSize += 2;
 
-    // Attendre pour respecter le taux d'échantillonnage
     delayMicroseconds(1000000 / sampleRate);
   }
 
-  // Terminer l'enregistrement
   audioFile.close();
+
   Serial.println("Enregistrement terminé.");
 }
 

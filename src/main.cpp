@@ -7,6 +7,7 @@
 #include <WiFi.h>
 #include <biticons.cpp>
 #include <wavserv.h>
+#include <rec-sound.h>
 
 #define I2C_SDA 27
 #define I2C_SCL 22
@@ -439,8 +440,10 @@ void loop(void) {
         vari_blue(parameter);
         vTaskDelete(NULL); }, "task2", 2048, NULL, 5, NULL);
       }
+      delete_audio_file();
+      record_mic();
     }
-    delay(300);
+    delay(500);
     while (digitalRead(BTN_PIN) == HIGH)
     {
         String word = recowav();
