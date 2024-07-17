@@ -1,6 +1,14 @@
 #include <SPI.h>
 #include <SD.h>
 #include <rec-sound.h>
+#include <Arduino.h>
+#include <stdio.h>
+#include <freertos/FreeRTOS.h>
+#include <I2SMEMSSampler.h>
+#include <ADCSampler.h>
+#include "SPIFFS.h"
+#include <WAVFileWriter.h>
+#include <config.h>
 
 // Configuration de la carte SD
 const int chipSelect = 5;
@@ -9,10 +17,12 @@ const int chipSelect = 5;
 #define ADC_PIN 35
 #define SAMPLE_RATE 16000 // Fréquence d'échantillonnage
 #define RECORD_DURATION 3 // Durée en secondes
-#define BUFFER_SIZE SAMPLE_RATE*RECORD_DURATION
+#define BUFFER_SIZE (SAMPLE_RATE*RECORD_DURATION)
 
 // Taille de la fenêtre du filtre médian
 #define MEDIAN_FILTER_WINDOW 5
+
+static const char *TAG = "WAV";
 
 // Structure de header pour fichier wav
 struct wav_header {
@@ -61,10 +71,16 @@ void writeWavHeader(File file_inp){
 void updateWavHeader(File &file) {
   int fileSize = file.size();
   file.seek(4);
-  file.write((byte)((fileSize - 8) & 0xFF)); file.write((byte)(((fileSize - 8) >> 8) & 0xFF)); file.write((byte)(((fileSize - 8) >> 16) & 0xFF)); file.write((byte)(((fileSize - 8) >> 24) & 0xFF));
+  file.write((byte)((fileSize - 8) & 0xFF));
+  file.write((byte)(((fileSize - 8) >> 8) & 0xFF));
+  file.write((byte)(((fileSize - 8) >> 16) & 0xFF));
+  file.write((byte)(((fileSize - 8) >> 24) & 0xFF));
   file.seek(40);
-  file.write((byte)((fileSize - 44) & 0xFF)); file.write((byte)(((fileSize - 44) >> 8) & 0xFF)); file.write((byte)(((fileSize - 44) >> 16) & 0xFF)); file.write((byte)(((fileSize - 44) >> 24) & 0xFF));
-} 
+  file.write((byte)((fileSize - 44) & 0xFF));
+  file.write((byte)(((fileSize - 44) >> 8) & 0xFF));
+  file.write((byte)(((fileSize - 44) >> 16) & 0xFF));
+  file.write((byte)(((fileSize - 44) >> 24) & 0xFF));
+}
 
 int16_t medianFilter(int16_t newValue) {
   // Ajouter la nouvelle valeur dans le buffer
@@ -92,41 +108,73 @@ int16_t medianFilter(int16_t newValue) {
   return sortedBuffer[MEDIAN_FILTER_WINDOW / 2];
 }
 
-void record_mic() {
-  if (!SD.begin(chipSelect)) {
-    Serial.println("Erreur d'initialisation de la carte SD!");
-    while (1);
+void record(I2SSampler *input, const char *fname)
+{
+  const int buffer_size = 1024; // Taille du buffer de lecture
+  int16_t *samples = (int16_t *)malloc(sizeof(int16_t) * buffer_size);
+  
+  if (samples == NULL) {
+    Serial.println("Erreur d'allocation mémoire pour les échantillons");
+    return;
   }
+  
+  Serial.println("Démarrage de l'enregistrement");
 
-  // Créer un nouveau fichier WAV
-  wavFile = SD.open("/audio.wav", FILE_WRITE);
-  if (!wavFile) {
-    Serial.println("Erreur lors de la création du fichier WAV");
+  input->start(); // Démarrer l'acquisition audio
+
+  SD.begin(chipSelect);
+  // Ouvrir le fichier sur la carte SD en écriture binaire
+  File file = SD.open(fname, FILE_WRITE);
+  if (!file) {
+    Serial.println("Erreur lors de l'ouverture du fichier %s");
+    free(samples);
     return;
   }
 
-  // Préparer l'en-tête WAV sans la taille des données, qui sera mise à jour après l'enregistrement
-  writeWavHeader(wavFile);
+  // Créer un écrivain de fichier WAV
+  WAVFileWriter writer(file, input->sample_rate());
 
-  Serial.println("Début de l'enregistrement...");
-  
-  int samples = RECORD_DURATION * SAMPLE_RATE;
-  int16_t sample;
-
-  for (int i = 0; i < samples; i++) {
-    sample = analogRead(ADC_PIN);
-    sample = (sample - 2048) * 16; // Ajuster l'échelle de 12 bits à 16 bits
-    sample = medianFilter(sample);
-    wavFile.write((byte*)&sample, sizeof(sample));
-    delayMicroseconds(1000000 / SAMPLE_RATE);
+  // Enregistrer pendant la durée spécifiée
+  int64_t start_time = esp_timer_get_time();
+  while (esp_timer_get_time() - start_time < RECORD_DURATION * 1000000)
+  {
+    int samples_read = input->read(samples, buffer_size);
+    writer.write(samples, samples_read);
   }
 
-  // Mettre à jour la taille des données dans l'entête WAV
-  updateWavHeader(wavFile);
+  // Arrêter l'acquisition audio
+  input->stop();
 
-  wavFile.close();
+  // Finaliser l'écriture du fichier WAV
+  writer.finish();
 
-  Serial.println("Enregistrement terminé.");
+  // Fermer le fichier
+  file.close();
+
+  // Libérer la mémoire et nettoyer
+  free(samples);
+  Serial.println("Enregistrement terminé");
+}
+
+void record_mic() {
+  Serial.println("Démarrage de l'enregistrement");
+
+  // Initialiser la carte SD
+  if (!SD.begin(chipSelect)) {
+    Serial.println("Erreur d'initialisation de la carte SD!");
+    return;
+  }
+
+  // Créer un nouvel échantillonneur ADC
+  I2SSampler *input = new ADCSampler(ADC_UNIT_1, ADC1_CHANNEL_7, i2s_adc_config);
+
+  // Appeler la fonction record avec l'entrée et le nom du fichier
+  record(input, "/audio.wav");
+
+  // Nettoyer et libérer la mémoire
+  delete input;
+
+  Serial.println("Enregistrement terminé");
 }
 
 void delete_audio_file() {
