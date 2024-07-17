@@ -8,50 +8,54 @@ const int chipSelect = 5;
 // Paramètres ADC
 #define ADC_PIN 35
 #define SAMPLE_RATE 16000 // Fréquence d'échantillonnage
-#define RECORD_DURATION 4 // Durée en secondes
+#define RECORD_DURATION 3 // Durée en secondes
+#define BUFFER_SIZE SAMPLE_RATE*RECORD_DURATION
 
 // Taille de la fenêtre du filtre médian
 #define MEDIAN_FILTER_WINDOW 5
+
+// Structure de header pour fichier wav
+struct wav_header {
+  char riff[4];
+  int32_t flength;
+  char wave[4];
+  char fmt[4];
+  int32_t chunk_size;
+  int16_t format_tag;
+  int16_t num_chans;
+  int32_t sample_rate;
+  int32_t bytes_per_second;
+  int16_t bytes_per_sample;
+  int16_t bits_per_sample;
+  char data[4];
+  int32_t dlength;
+};
+
+const int header_length = sizeof(struct wav_header);
 
 // Fichier sur la carte SD
 File wavFile;
 int16_t medianFilterBuffer[MEDIAN_FILTER_WINDOW];
 
-void writeWavHeader(File file, int sampleRate, int bitsPerSample, int channels, int dataSize) {
-  byte header[44];
-  long totalDataLen = dataSize + 36;
-  long audioDataLen = dataSize;
-  long longSampleRate = sampleRate;
-  long byteRate = sampleRate * channels * bitsPerSample / 8;
+void writeWavHeader(File file_inp){
+  struct wav_header wavh;
 
-  // ChunkID "RIFF"
-  header[0] = 'R'; header[1] = 'I'; header[2] = 'F'; header[3] = 'F';
-  // ChunkSize
-  header[4] = (byte) (totalDataLen & 0xff); header[5] = (byte) ((totalDataLen >> 8) & 0xff); header[6] = (byte) ((totalDataLen >> 16) & 0xff); header[7] = (byte) ((totalDataLen >> 24) & 0xff);
-  // Format "WAVE"
-  header[8] = 'W'; header[9] = 'A'; header[10] = 'V'; header[11] = 'E';
-  // Subchunk1ID "fmt "
-  header[12] = 'f'; header[13] = 'm'; header[14] = 't'; header[15] = ' ';
-  // Subchunk1Size (16 for PCM)
-  header[16] = 16; header[17] = 0; header[18] = 0; header[19] = 0;
-  // AudioFormat (1 for PCM)
-  header[20] = 1; header[21] = 0;
-  // NumChannels
-  header[22] = channels; header[23] = 0;
-  // SampleRate
-  header[24] = (byte) (longSampleRate & 0xff); header[25] = (byte) ((longSampleRate >> 8) & 0xff); header[26] = (byte) ((longSampleRate >> 16) & 0xff); header[27] = (byte) ((longSampleRate >> 24) & 0xff);
-  // ByteRate
-  header[28] = (byte) (byteRate & 0xff); header[29] = (byte) ((byteRate >> 8) & 0xff); header[30] = (byte) ((byteRate >> 16) & 0xff); header[31] = (byte) ((byteRate >> 24) & 0xff);
-  // BlockAlign
-  header[32] = (byte) (channels * bitsPerSample / 8); header[33] = 0;
-  // BitsPerSample
-  header[34] = bitsPerSample; header[35] = 0;
-  // Subchunk2ID "data"
-  header[36] = 'd'; header[37] = 'a'; header[38] = 't'; header[39] = 'a';
-  // Subchunk2Size
-  header[40] = (byte) (audioDataLen & 0xff); header[41] = (byte) ((audioDataLen >> 8) & 0xff); header[42] = (byte) ((audioDataLen >> 16) & 0xff); header[43] = (byte) ((audioDataLen >> 24) & 0xff);
+  strncpy(wavh.riff, "RIFF", 4);
+  strncpy(wavh.wave, "WAVE", 4);
+  strncpy(wavh.fmt, "fmt ", 4); // Notez l'espace après 'fmt'
+  strncpy(wavh.data, "data", 4);
 
-  file.write(header, sizeof(header));
+  wavh.chunk_size = 16;
+  wavh.format_tag = 1;
+  wavh.num_chans = 1;
+  wavh.sample_rate = SAMPLE_RATE;
+  wavh.bits_per_sample = 16;
+  wavh.bytes_per_second = wavh.sample_rate * wavh.bits_per_sample / 8 * wavh.num_chans;
+  wavh.bytes_per_sample = wavh.bits_per_sample / 8 * wavh.num_chans;
+  wavh.dlength = 0; // Sera mis à jour plus tard
+  wavh.flength = 0; // Sera mis à jour plus tard
+
+  file_inp.write((byte*)&wavh, header_length);
 }
 
 void updateWavHeader(File &file) {
@@ -101,9 +105,8 @@ void record_mic() {
     return;
   }
 
-
   // Préparer l'en-tête WAV sans la taille des données, qui sera mise à jour après l'enregistrement
-  writeWavHeader(wavFile, SAMPLE_RATE, 16, 1, 0);
+  writeWavHeader(wavFile);
 
   Serial.println("Début de l'enregistrement...");
   
