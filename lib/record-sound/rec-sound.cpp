@@ -2,6 +2,8 @@
 #include <SD.h>
 #include <rec-sound.h>
 #include <driver/i2s.h>
+#include <driver/adc.h>
+#include <esp_adc_cal.h>
 
 // Configuration de la carte SD
 const int chipSelect = 5;
@@ -38,8 +40,6 @@ const int header_length = sizeof(struct wav_header);
 // Fichier sur la carte SD
 File wavFile;
 
-QueueHandle_t i2s_queue;
-
 void writeWavHeader(File &file_inp){
   struct wav_header wavh;
 
@@ -53,8 +53,8 @@ void writeWavHeader(File &file_inp){
   wavh.num_chans = 1;
   wavh.sample_rate = I2S_SAMPLE_RATE;
   wavh.bits_per_sample = I2S_BITS_PER_SAMPLE;
-  wavh.bytes_per_second = wavh.sample_rate * wavh.bits_per_sample / 8 * wavh.num_chans;
-  wavh.bytes_per_sample = wavh.bits_per_sample / 8 * wavh.num_chans;
+  wavh.bytes_per_second = (wavh.sample_rate * wavh.bits_per_sample * wavh.num_chans) / 8 ;
+  wavh.bytes_per_sample = (wavh.bits_per_sample * wavh.num_chans) / 8;
   wavh.dlength = 0; // Sera mis à jour plus tard
   wavh.flength = 36 + wavh.dlength; // Sera mis à jour plus tard
 
@@ -66,10 +66,10 @@ void updateWavHeader(File &file) {
   uint32_t dataSize = fileSize - header_length;
 
   file.seek(4);
-  file.write((byte*)&fileSize, 4); // Mettre à jour flength
+  file.write((uint8_t*)&fileSize, 4); // Mettre à jour flength
 
   file.seek(40);
-  file.write((byte*)&dataSize, 4); // Mettre à jour dlength
+  file.write((uint8_t*)&dataSize, 4); // Mettre à jour dlength
 }
 
 void setupI2S() {
@@ -77,20 +77,20 @@ void setupI2S() {
     .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_ADC_BUILT_IN),
     .sample_rate = I2S_SAMPLE_RATE,
     .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
-    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
-    .communication_format = I2S_COMM_FORMAT_I2S_LSB,
+    .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
+    .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_STAND_MSB),
     .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
-    .dma_buf_count = 4,
+    .dma_buf_count = 8,
     .dma_buf_len = 1024,
     .use_apll = false,
     .tx_desc_auto_clear = false,
     .fixed_mclk = 0};
 
   //install and start i2s driver
-  i2s_driver_install(I2S_NUM_0, &i2s_config, 4, &i2s_queue);
+  i2s_driver_install(I2S_NUM_0, &i2s_config, 4, NULL);
 
   //init ADC pad
-  i2s_set_adc_mode(ADC_UNIT_1, ADC1_CHANNEL_7);
+  i2s_set_adc_mode(ADC_UNIT_1, ADC_MIC_CHANNEL);
 
   // enable the ADC
   i2s_adc_enable(I2S_NUM_0);
@@ -116,13 +116,21 @@ void record_mic() {
 
   Serial.println("Début de l'enregistrement...");
   
-  size_t bytes_read;
-  int16_t i2s_samples[256]; // Buffer for I2S samples
-  unsigned long startMillis = millis();
+  size_t bytes_read = 0;
+  int16_t i2s_samples[1024]; // Buffer for I2S samples
 
-  while (millis() - startMillis < RECORD_DURATION * 1000) {
-    i2s_read(I2S_NUM_0, i2s_samples, sizeof(i2s_samples), &bytes_read, portMAX_DELAY);
-    wavFile.write((byte*)i2s_samples, bytes_read);
+  unsigned long startMicros = micros();
+
+  while (micros() - startMicros < (RECORD_DURATION * 1000000)) {
+    i2s_read(I2S_NUM_0, (int16_t*)i2s_samples, 1024*sizeof(int16_t), &bytes_read, portMAX_DELAY);
+    int samples_read = bytes_read / sizeof(int16_t);
+    for (int i = 0; i < samples_read; i++)
+    {
+        i2s_samples[i] = (2048 - (uint16_t(i2s_samples[i]) & 0xfff)) * 15;
+    }
+    
+    wavFile.write((u_int8_t*)i2s_samples, bytes_read);
+
   }
 
   // Mettre à jour la taille des données dans l'entête WAV

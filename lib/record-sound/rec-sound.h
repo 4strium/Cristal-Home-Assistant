@@ -6,5 +6,8 @@
 
 void record_mic();
 void delete_audio_file();
+void setupI2S();
+void updateWavHeader(File &file);
+void writeWavHeader(File &file_inp);
 
 #endif
