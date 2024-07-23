@@ -1,18 +1,20 @@
 #include <SPI.h>
 #include <SD.h>
 #include <rec-sound.h>
+#include <driver/i2s.h>
 
 // Configuration de la carte SD
 const int chipSelect = 5;
 
-// Paramètres ADC
-#define ADC_PIN 35
-#define SAMPLE_RATE 16000 // Fréquence d'échantillonnage
-#define RECORD_DURATION 3 // Durée en secondes
-#define BUFFER_SIZE SAMPLE_RATE*RECORD_DURATION
+// Paramètres I2S
+#define I2S_SAMPLE_RATE 16000
+#define I2S_NUM_CHANNELS 1
+#define I2S_BITS_PER_SAMPLE 16
 
-// Taille de la fenêtre du filtre médian
-#define MEDIAN_FILTER_WINDOW 5
+#define RECORD_DURATION 3 // Durée en secondes
+
+// Analog Microphone Settings - ADC1_CHANNEL_7 is GPIO35
+#define ADC_MIC_CHANNEL ADC1_CHANNEL_7
 
 // Structure de header pour fichier wav
 struct wav_header {
@@ -35,9 +37,10 @@ const int header_length = sizeof(struct wav_header);
 
 // Fichier sur la carte SD
 File wavFile;
-int16_t medianFilterBuffer[MEDIAN_FILTER_WINDOW];
 
-void writeWavHeader(File file_inp){
+QueueHandle_t i2s_queue;
+
+void writeWavHeader(File &file_inp){
   struct wav_header wavh;
 
   strncpy(wavh.riff, "RIFF", 4);
@@ -48,8 +51,8 @@ void writeWavHeader(File file_inp){
   wavh.chunk_size = 16;
   wavh.format_tag = 1;
   wavh.num_chans = 1;
-  wavh.sample_rate = SAMPLE_RATE;
-  wavh.bits_per_sample = 16;
+  wavh.sample_rate = I2S_SAMPLE_RATE;
+  wavh.bits_per_sample = I2S_BITS_PER_SAMPLE;
   wavh.bytes_per_second = wavh.sample_rate * wavh.bits_per_sample / 8 * wavh.num_chans;
   wavh.bytes_per_sample = wavh.bits_per_sample / 8 * wavh.num_chans;
   wavh.dlength = 0; // Sera mis à jour plus tard
@@ -69,30 +72,28 @@ void updateWavHeader(File &file) {
   file.write((byte*)&dataSize, 4); // Mettre à jour dlength
 }
 
-int16_t medianFilter(int16_t newValue) {
-  // Ajouter la nouvelle valeur dans le buffer
-  for (int i = MEDIAN_FILTER_WINDOW - 1; i > 0; i--) {
-    medianFilterBuffer[i] = medianFilterBuffer[i - 1];
-  }
-  medianFilterBuffer[0] = newValue;
+void setupI2S() {
+  i2s_config_t i2s_config = {
+    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_ADC_BUILT_IN),
+    .sample_rate = I2S_SAMPLE_RATE,
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+    .communication_format = I2S_COMM_FORMAT_I2S_LSB,
+    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
+    .dma_buf_count = 4,
+    .dma_buf_len = 1024,
+    .use_apll = false,
+    .tx_desc_auto_clear = false,
+    .fixed_mclk = 0};
 
-  // Créer une copie du buffer pour le trier
-  int16_t sortedBuffer[MEDIAN_FILTER_WINDOW];
-  memcpy(sortedBuffer, medianFilterBuffer, sizeof(medianFilterBuffer));
+  //install and start i2s driver
+  i2s_driver_install(I2S_NUM_0, &i2s_config, 4, &i2s_queue);
 
-  // Trier le buffer
-  for (int i = 0; i < MEDIAN_FILTER_WINDOW - 1; i++) {
-    for (int j = i + 1; j < MEDIAN_FILTER_WINDOW; j++) {
-      if (sortedBuffer[i] > sortedBuffer[j]) {
-        int16_t temp = sortedBuffer[i];
-        sortedBuffer[i] = sortedBuffer[j];
-        sortedBuffer[j] = temp;
-      }
-    }
-  }
+  //init ADC pad
+  i2s_set_adc_mode(ADC_UNIT_1, ADC1_CHANNEL_7);
 
-  // Retourner la valeur médiane
-  return sortedBuffer[MEDIAN_FILTER_WINDOW / 2];
+  // enable the ADC
+  i2s_adc_enable(I2S_NUM_0);
 }
 
 void record_mic() {
@@ -111,27 +112,25 @@ void record_mic() {
   // Préparer l'en-tête WAV sans la taille des données, qui sera mise à jour après l'enregistrement
   writeWavHeader(wavFile);
 
+  setupI2S();
+
   Serial.println("Début de l'enregistrement...");
   
-  int samples = RECORD_DURATION * SAMPLE_RATE;
-  int16_t sample;
-  unsigned long startMicros = micros();
+  size_t bytes_read;
+  int16_t i2s_samples[256]; // Buffer for I2S samples
+  unsigned long startMillis = millis();
 
-  for (int i = 0; i < samples; i++) {
-    sample = analogRead(ADC_PIN);
-    sample = (sample - 2048) * 16; // Ajuster l'échelle de 12 bits à 16 bits
-    // sample = medianFilter(sample);
-    wavFile.write((byte*)&sample, sizeof(sample));
-    
-    while (micros() - startMicros < (i + 1) * (1000000 / SAMPLE_RATE)) {
-      // Wait for the next sample time
-    }
+  while (millis() - startMillis < RECORD_DURATION * 1000) {
+    i2s_read(I2S_NUM_0, i2s_samples, sizeof(i2s_samples), &bytes_read, portMAX_DELAY);
+    wavFile.write((byte*)i2s_samples, bytes_read);
   }
 
   // Mettre à jour la taille des données dans l'entête WAV
   updateWavHeader(wavFile);
 
   wavFile.close();
+
+  i2s_driver_uninstall(I2S_NUM_0);
 
   Serial.println("Enregistrement terminé.");
 }
