@@ -18,6 +18,8 @@ const int chipSelect = 5;
 // Analog Microphone Settings - ADC1_CHANNEL_7 is GPIO35
 #define ADC_MIC_CHANNEL ADC1_CHANNEL_7
 
+
+int samples_read;
 // Structure de header pour fichier wav
 struct wav_header {
   char riff[4];
@@ -62,8 +64,9 @@ void writeWavHeader(File &file_inp){
 }
 
 void updateWavHeader(File &file) {
-  uint32_t fileSize = file.size();
-  uint32_t dataSize = fileSize - header_length;
+  int fwasize = samples_read * sizeof(int16_t);
+  uint32_t fileSize = fwasize - 8;
+  uint32_t dataSize = fwasize - header_length;
 
   file.seek(4);
   file.write((uint8_t*)&fileSize, 4); // Mettre à jour flength
@@ -123,7 +126,7 @@ void record_mic() {
 
   while (micros() - startMicros < (RECORD_DURATION * 1000000)) {
     i2s_read(I2S_NUM_0, (int16_t*)i2s_samples, 1024*sizeof(int16_t), &bytes_read, portMAX_DELAY);
-    int samples_read = bytes_read / sizeof(int16_t);
+    samples_read = bytes_read / sizeof(int16_t);
     for (int i = 0; i < samples_read; i++)
     {
         i2s_samples[i] = (2048 - (uint16_t(i2s_samples[i]) & 0xfff)) * 15;
