@@ -48,3 +48,8 @@ Cristal-Home-Assitant aims to be a fully customizable voice assistant adapted to
 * 3.3 V
 * GPIO 4
 * GND
+
+### Microphone MAX9814 :
+* VDD : 3.3 V
+* OUT : GPIO 35 (ADC1_CHANNEL_7)
+* GND

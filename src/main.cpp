@@ -440,7 +440,6 @@ void loop(void) {
         vari_blue(parameter);
         vTaskDelete(NULL); }, "task2", 2048, NULL, 5, NULL);
       }
-      delete_audio_file();
       record_mic();
     }
     delay(500);
