@@ -36,7 +36,7 @@ class Eyes {
 private :
   int x1, x2, y, width, height;
 public :
-  int step = 10;
+  int step;
   void initialize(){
     x1 = 8;
     x2 = 70;
@@ -54,6 +54,7 @@ public :
       u8g2.drawRBox(x2, 24, width, 14, 7);
       u8g2.sendBuffer();
     }
+    step = 1;
   }
 
   void det_eyes_out(){
@@ -64,10 +65,11 @@ public :
       u8g2.drawRBox(x2, 24, width, 14, 7);
       u8g2.sendBuffer();
     }
+    step = 0;
   }
 
   void clign_in(){
-    if (step == 0){ 
+    if (step == 2){ 
       for (int i = 0; i < 12; i++){
         u8g2.clearBuffer();
         u8g2.drawRBox(x1, y, width, height, 7);
@@ -92,7 +94,7 @@ public :
         y -= 1;
         height += 2;
       };
-      step = 0;
+      step = 2;
     }
   }
 
@@ -473,7 +475,7 @@ void loop(void) {
       current_temp = 300.0;
     }
 
-    if (e1.step == 0)
+    if (e1.step == 2)
     {
       xTaskCreate([](void *parameter)
                   {

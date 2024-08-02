@@ -43,6 +43,7 @@ void record_mic() {
     driver_installed = true;
   }
 
+  Serial.println("Démarrage de l'enregistrement...");
   for (int j = 0; j < waveDataSize/numPartWavData; ++j) {
     I2S_Read(communicationData, numCommunicationData);
     for (int i = 0; i < numCommunicationData/8; ++i) {
