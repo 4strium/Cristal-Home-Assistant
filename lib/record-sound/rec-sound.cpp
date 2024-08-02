@@ -18,6 +18,8 @@ char communicationData[numCommunicationData];
 char partWavData[numPartWavData];
 File file;
 
+bool driver_installed = false;
+
 void record_mic() {
 
   if (!SD.begin()) Serial.println("SD begin failed");
@@ -36,7 +38,10 @@ void record_mic() {
 
   file.write(header, headerSize);
 
-  I2S_Init(I2S_MODE, I2S_BITS_PER_SAMPLE_32BIT);
+  if (!driver_installed){
+    I2S_Init(I2S_MODE, I2S_BITS_PER_SAMPLE_32BIT);
+    driver_installed = true;
+  }
 
   for (int j = 0; j < waveDataSize/numPartWavData; ++j) {
     I2S_Read(communicationData, numCommunicationData);

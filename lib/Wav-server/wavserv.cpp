@@ -65,7 +65,7 @@ String recowav(){
     }
 
     // Réception du contenu de rapport.txt
-    Serial.println("Waiting for the server's report...");
+    Serial.println("En attente de la réponse du serveur...");
     while (client.connected() || client.available()) {
         if (client.available()) {
             String report = client.readStringUntil('\n');  // Read until new line character
@@ -76,5 +76,4 @@ String recowav(){
   
     // Fermeture du socket
     client.stop();
-    Serial.println("\nFile sent and report received successfully");
 }
