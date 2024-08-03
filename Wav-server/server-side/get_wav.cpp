@@ -10,6 +10,14 @@
 #define PORT 8080
 #define MAX_CONNECTIONS 5
 
+bool is_file_empty(const std::string& filename){
+    struct stat file_stat;
+    if (stat(filename.c_str(), &file_stat) != 0){
+        return true;
+    }
+    return file_stat.st_size == 0;
+}
+
 int main() {
     int serverSocket, recSocket, sendSocket;
     struct sockaddr_in serverAddr, clientAddr;
@@ -61,20 +69,21 @@ int main() {
             continue;
         }
 
+        bool receivedData = false;
         while ((bytesRead = recv(recSocket, buffer, sizeof(buffer), 0)) > 0) {
             outfile.write(buffer, bytesRead);
+            receivedData = true;
         }
         outfile.close();
-        std::cout << "Fichier reçu avec succès" << std::endl;
-
         // Fermer le socket après la réception du fichier audio
         close(recSocket);
 
-        sendSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &addrSize);
-        if (sendSocket < 0) {
-            std::cerr << "La connexion utile à l'envoi a échouée" << std::endl;
-            continue;
+        if (!receivedData || is_file_empty("enregistrement.wav")) {
+            std::cerr << "Fichier reçu est vide, aucun traitement effectué" << std::endl;
+            continue;   // Passer à la prochaine connexion
         }
+
+        std::cout << "Fichier reçu avec succès" << std::endl;
 
         // Exécuter le script Python
         std::cout << "Exécution du script Python..." << std::endl;
@@ -83,6 +92,12 @@ int main() {
             std::cerr << "Échec de l'exécution du script Python" << std::endl;
         } else {
             std::cout << "Script Python exécuté avec succès" << std::endl;
+        }
+
+        sendSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &addrSize);
+        if (sendSocket < 0) {
+            std::cerr << "La connexion utile à l'envoi a échouée" << std::endl;
+            continue;   // Passer à la prochaine connexion
         }
 
         // Lire le contenu de rapport.txt
