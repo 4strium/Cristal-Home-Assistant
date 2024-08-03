@@ -23,14 +23,12 @@ U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R2, /* reset=*/ U8X8_PIN_NONE);
 char input_refl;
 char input;
 
-float current_temp = 300.0;
-int current_wmo, current_dn;
-
 long duration;
 float distanceCm;
 
 int count_inactivity = 0;
 bool actived = false;
+int passive_counter = 0;
 
 class Eyes {
 private :
@@ -40,8 +38,8 @@ public :
   void initialize(){
     x1 = 8;
     x2 = 70;
-    y = 12;
-    height = 36;
+    y = 24;
+    height = 14;
     width = 50;
     step = 0;
   }
@@ -50,8 +48,8 @@ public :
     for (int brightness = 0; brightness < 256; brightness+=15){
       u8g2.clearBuffer();
       u8g2.setContrast(brightness);
-      u8g2.drawRBox(x1, 24, width, 14, 7);
-      u8g2.drawRBox(x2, 24, width, 14, 7);
+      u8g2.drawRBox(x1, y, width, height, 7);
+      u8g2.drawRBox(x2, y, width, height, 7);
       u8g2.sendBuffer();
     }
     step = 1;
@@ -61,8 +59,8 @@ public :
     for (int brightness = 255; brightness >= 0; brightness-=15){
       u8g2.clearBuffer();
       u8g2.setContrast(brightness);
-      u8g2.drawRBox(x1, 24, width, 14, 7);
-      u8g2.drawRBox(x2, 24, width, 14, 7);
+      u8g2.drawRBox(x1, y, width, height, 7);
+      u8g2.drawRBox(x2, y, width, height, 7);
       u8g2.sendBuffer();
     }
     step = 0;
@@ -84,9 +82,7 @@ public :
 
   void clign_out(){
     if (step == 1){
-      y -= 1;
-      height += 2;
-      for (int i = 0; i < 11; i++){
+      for (int i = 0; i < 12; i++){
         u8g2.clearBuffer();
         u8g2.drawRBox(x1, y, width, height, 7);
         u8g2.drawRBox(x2, y, width, height, 7);
@@ -98,6 +94,7 @@ public :
     }
   }
 
+/*
   void round_in(){
     if (step == 0){
       for (int i = 0; i < 16; i++){
@@ -224,6 +221,7 @@ public :
       }
     }
   }
+*/
 };
 
 class Meteo_aff {
@@ -425,7 +423,11 @@ void loop(void) {
       float dist = get_distance_ultrasonic();
       Serial.println(dist);
       Serial.println(digitalRead(BTN_PIN));
-      if (dist > 15.0){break;}
+      if ((dist > 15.0)&&(passive_counter >= 20)){
+        passive_counter = 0;
+        break;
+      }
+      else if (dist > 15.0){passive_counter++;}
       delay(300);
     }
 
@@ -434,57 +436,52 @@ void loop(void) {
       if (e1.step == 1)
       {
         xTaskCreate([](void *parameter)
-                    {
-        e1.clign_out();
-        vTaskDelete(NULL); }, "task1", 2048, NULL, 5, NULL);
+        {
+          e1.clign_out();
+          vTaskDelete(NULL); 
+        }, "task1", 2048, NULL, 5, NULL);
         xTaskCreate([](void *parameter)
-                    {
-        vari_blue(parameter);
-        vTaskDelete(NULL); }, "task2", 2048, NULL, 5, NULL);
+        {
+          vari_blue(parameter);
+          vTaskDelete(NULL); 
+        }, "task2", 2048, NULL, 5, NULL);
       }
+      delay(500);
       record_mic();
-    }
-    delay(500);
-    while (digitalRead(BTN_PIN) == HIGH)
-    {
-        String word = recowav();
+      delay(500);
+      String word = recowav();
         Serial.println(word);
         if (word == String("météo"))
         {
-          current_temp = get_temp();
-          current_wmo = get_WMO();
-          current_dn = get_day_night();
-          break;
+          Meteo_aff m1;
+          m1.temp =  get_temp();
+          m1.dn_cond = get_day_night();
+          m1.wmo_code = get_WMO();
+          m1.setLocation("Guilers");
+          m1.print_4user();
+          delay(10000);
         }
         else if (word == String("minuteur"))
         {
           Timer(600);
-          break;
         }
     }
 
-    if (current_temp != 300.0)
-    {
-      Meteo_aff m1;
-      m1.temp = current_temp;
-      m1.dn_cond = current_dn;
-      m1.wmo_code = current_wmo;
-      m1.setLocation("Guilers");
-      m1.print_4user();
-      delay(10000);
-      current_temp = 300.0;
-    }
+    Serial.println(e1.step);
 
     if (e1.step == 2)
     {
+      delay(1000);
       xTaskCreate([](void *parameter)
-                  {
-      e1.clign_in();
-      vTaskDelete(NULL); }, "task1", 2048, NULL, 5, NULL);
+      {
+        e1.clign_in();
+        vTaskDelete(NULL); 
+      }, "task1", 2048, NULL, 5, NULL);
       xTaskCreate([](void *parameter)
-                  {
-      fade_out_blue(parameter);
-      vTaskDelete(NULL); }, "task2", 2048, NULL, 5, NULL);
+      {
+        fade_out_blue(parameter);
+        vTaskDelete(NULL); 
+      }, "task2", 2048, NULL, 5, NULL);
     }
 
     delay(2000);
