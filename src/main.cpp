@@ -339,6 +339,20 @@ class Timer {
     }
 };
 
+void bonjour_func(){
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_helvB18_te);
+  u8g2.setFontDirection(2);
+  u8g2.enableUTF8Print();
+
+  u8g2.setFont(u8g2_font_lubB14_tr);
+  u8g2.drawUTF8(125,60,"Bonjour !");
+
+  u8g2.setBitmapMode(1);
+  u8g2.sendBuffer();
+  delay(5000);
+}
+
 float get_distance_ultrasonic(){
   // Clears the trigPin
   digitalWrite(TRIG_PIN, LOW);
@@ -407,11 +421,10 @@ void setup(void) {
 
 void loop(void) {
 
-  Serial.println(digitalRead(BTN_PIN));
-
   count_inactivity++;
   float dist = get_distance_ultrasonic();
   Serial.println(dist);
+  
   if (dist < 15.0)
   {
     count_inactivity--;
@@ -422,7 +435,7 @@ void loop(void) {
     while (digitalRead(BTN_PIN) == LOW) {
       float dist = get_distance_ultrasonic();
       Serial.println(dist);
-      Serial.println(digitalRead(BTN_PIN));
+
       if ((dist > 15.0)&&(passive_counter >= 20)){
         passive_counter = 0;
         break;
@@ -465,9 +478,10 @@ void loop(void) {
         {
           Timer(600);
         }
+        else if (word == String("bonjour")){
+          bonjour_func();
+        }
     }
-
-    Serial.println(e1.step);
 
     if (e1.step == 2)
     {
