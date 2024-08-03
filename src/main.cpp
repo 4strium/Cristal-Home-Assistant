@@ -340,17 +340,26 @@ class Timer {
 };
 
 void bonjour_func(){
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_helvB18_te);
-  u8g2.setFontDirection(2);
-  u8g2.enableUTF8Print();
+  for (int i=0;i<25;i++){
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_helvB18_te);
+    u8g2.setFontDirection(2);
+    u8g2.enableUTF8Print();
 
-  u8g2.setFont(u8g2_font_lubB14_tr);
-  u8g2.drawUTF8(125,60,"Bonjour !");
+    u8g2.setFont(u8g2_font_lubB14_tr);
+    u8g2.drawUTF8(110,45,"Bonjour !");
 
-  u8g2.setBitmapMode(1);
-  u8g2.sendBuffer();
-  delay(5000);
+    u8g2.setBitmapMode(1);
+    
+    if (i % 2 == 0){
+      u8g2.drawXBM(50, 2, 32, 32, epd_bitmap_smiley);
+    }
+    else {
+      u8g2.drawXBM(50, 2, 32, 32, epd_bitmap_sourire);
+    }
+    u8g2.sendBuffer();
+    delay(300);
+  }
 }
 
 float get_distance_ultrasonic(){
@@ -462,9 +471,10 @@ void loop(void) {
       delay(500);
       record_mic();
       delay(500);
-      String word = recowav();
-        Serial.println(word);
-        if (word == String("météo"))
+      // String word = recowav();
+      // Serial.println(word);
+      String word = "bonjour"; // Temporary
+      if (word == String("météo"))
         {
           Meteo_aff m1;
           m1.temp =  get_temp();
@@ -474,11 +484,12 @@ void loop(void) {
           m1.print_4user();
           delay(10000);
         }
-        else if (word == String("minuteur"))
+      else if (word == String("minuteur"))
         {
           Timer(600);
         }
-        else if (word == String("bonjour")){
+      else if (word == String("bonjour"))
+        {
           bonjour_func();
         }
     }
