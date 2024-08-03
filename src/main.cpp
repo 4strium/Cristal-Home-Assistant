@@ -8,6 +8,7 @@
 #include <biticons.cpp>
 #include <wavserv.h>
 #include <rec-sound.h>
+#include <date-heure.h>
 
 #define I2C_SDA 27
 #define I2C_SCL 22
@@ -362,6 +363,23 @@ void bonjour_func(){
   }
 }
 
+void print_datetime(){
+  u8g2.clearBuffer();
+  u8g2.setFontDirection(2);
+  u8g2.enableUTF8Print();
+
+  u8g2.setFont(u8g2_font_logisoso20_tr);
+  String timec = get_time();
+  u8g2.drawUTF8(96,30,timec.c_str());
+
+  u8g2.setFont(u8g2_font_logisoso18_tr);
+  String date = get_date();
+  u8g2.drawUTF8(120,2,date.c_str());
+
+  u8g2.sendBuffer();
+  delay(8000);
+}
+
 float get_distance_ultrasonic(){
   // Clears the trigPin
   digitalWrite(TRIG_PIN, LOW);
@@ -471,9 +489,8 @@ void loop(void) {
       delay(500);
       record_mic();
       delay(500);
-      // String word = recowav();
-      // Serial.println(word);
-      String word = "bonjour"; // Temporary
+      String word = recowav();
+      Serial.println(word);
       if (word == String("météo"))
         {
           Meteo_aff m1;
@@ -491,6 +508,10 @@ void loop(void) {
       else if (word == String("bonjour"))
         {
           bonjour_func();
+        }
+      else if ((word == String("date"))||(word == String("heure")||(word == String("jour"))))
+        {
+          print_datetime();
         }
     }
 

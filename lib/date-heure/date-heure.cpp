@@ -3,12 +3,12 @@
 #include <ArduinoJson.h>
 #include <date-heure.h>
 
-String url = "http://api.timezonedb.com/v2.1/get-time-zone?key=WS28EZFET19B&format=json&by=position&lat=48.427&lng=-4.5598";
+String url_dt = "http://api.timezonedb.com/v2.1/get-time-zone?key=WS28EZFET19B&format=json&by=position&lat=48.427&lng=-4.5598";
 
 String init_http_dt(void){
     // Utilisation de la bibliothèque HTTPClient pour effectuer une requête GET
     HTTPClient http;
-    http.begin(url); // Début de la requête HTTP
+    http.begin(url_dt); // Début de la requête HTTP
 
     int code = http.GET(); // Effectuer la requête GET
     
@@ -64,7 +64,7 @@ String get_time(void) {
     if (!error) {
         // Extraire la valeur de "formatted"
         String dateTime = doc["formatted"];
-        return dateTime.substring(11); // Extraire l'heure (format HH:MM:SS)
+        return dateTime.substring(11,16); // Extraire l'heure (format HH:MM)
     } else {
         Serial.println("Erreur lors de la désérialisation du JSON !");
         return "error";
