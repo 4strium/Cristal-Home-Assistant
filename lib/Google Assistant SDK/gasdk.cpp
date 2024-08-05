@@ -11,7 +11,7 @@ void exec_com_assistant(String apiKey, String deviceId, String modelId, String p
   // Commence la requête POST
   http.begin(serverUrl);
   http.addHeader("Content-Type", "application/json");
-  http.addHeader("x-api-key", apiKey);
+  http.addHeader("x-api-key", apiKey.c_str());
 
   // Corps de la requête JSON avec paramètres
   String jsonPayload = "{\"deviceId\": \"" + deviceId + "\", \"deviceModelId\": \"" + modelId + "\", \"phrase\": \"" + phrase + "\"}";

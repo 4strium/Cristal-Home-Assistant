@@ -8,7 +8,8 @@
 #include <biticons.cpp>
 #include <wavserv.h>
 #include <rec-sound.h>
-#include <date-heure.h>
+#include <date-heure.h> 
+#include <gasdk.h>
 
 #define I2C_SDA 27
 #define I2C_SCL 22
@@ -31,7 +32,9 @@ int count_inactivity = 0;
 bool actived = false;
 int passive_counter = 0;
 
-String accessToken;
+String API_key;
+String Device_Id;
+String Model_Id;
 
 class Eyes {
 private :
@@ -427,6 +430,25 @@ void setup(void) {
   }
   String password = Serial.readString();
 
+  Serial.println("Entrez votre clé API pour accéder à l'Assistant Google :");
+  while (!Serial.available()) {
+    // Wait for user input
+  }
+  API_key = Serial.readString();
+
+  Serial.println("Entrez le modèle de votre appareil :");
+  while (!Serial.available()) {
+    // Wait for user input
+  }
+  Model_Id = Serial.readString();
+
+
+  Serial.println("Entrez l'identifiant unique de votre appareil :");
+  while (!Serial.available()) {
+    // Wait for user input
+  }
+  Device_Id = Serial.readString();
+
   // Utilisez les objets String directement, ou copiez leur contenu si nécessaire
   // Exemple : utiliser les méthodes c_str() lorsqu'il est sûr que les objets String restent en scope
   const char* ssid_cstr = ssid.c_str();
@@ -491,7 +513,8 @@ void loop(void) {
       delay(500);
       record_mic();
       delay(500);
-      String word = recowav();
+      // String word = recowav();
+      String word = "allume bureau";
       Serial.println(word);
       if (word == String("météo"))
         {
@@ -514,6 +537,16 @@ void loop(void) {
       else if ((word == String("date"))||(word == String("heure")||(word == String("jour"))))
         {
           print_datetime();
+        }
+      else if (word == String("allume bureau"))
+        {
+          String input_phrase = String("Turn on Bureau Romain");
+          exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
+        }
+      else if (word == String("éteint bureau"))
+        {
+          String input_phrase = String("Turn off Bureau Romain");
+          exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
         }
     }
 
