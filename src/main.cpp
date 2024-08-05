@@ -31,6 +31,8 @@ int count_inactivity = 0;
 bool actived = false;
 int passive_counter = 0;
 
+String accessToken;
+
 class Eyes {
 private :
   int x1, x2, y, width, height;
