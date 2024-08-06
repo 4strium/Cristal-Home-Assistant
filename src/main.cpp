@@ -10,6 +10,7 @@
 #include <rec-sound.h>
 #include <date-heure.h> 
 #include <gasdk.h>
+#include <open-news-api.h>
 
 #define I2C_SDA 27
 #define I2C_SCL 22
@@ -542,10 +543,24 @@ void loop(void) {
           String input_phrase = String("Turn on Bureau Romain");
           exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
         }
-      else if (word == String("éteint bureau"))
+      else if (word == String("éteins bureau"))
         {
           String input_phrase = String("Turn off Bureau Romain");
           exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
+        }
+      else if (word == String("ouvre le volet"))
+        {
+          String input_phrase = String("set velux romain at 100%");
+          exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
+        }
+      else if (word == String("ferme le volet"))
+        {
+          String input_phrase = String("set velux romain at 50%");
+          exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
+        }
+      else if (word == String("info")||word == String("infos"))
+        {
+          display_titles();
         }
     }
 
