@@ -11,6 +11,7 @@
 #include <date-heure.h> 
 #include <gasdk.h>
 #include <open-news-api.h>
+#include <get_secret_values.h>
 
 #define I2C_SDA 27
 #define I2C_SCL 22
@@ -19,6 +20,8 @@
 #define TRIG_PIN 15
 #define ECHO_PIN 2
 #define SOUND_SPEED 0.034
+#define MAX_TITLES 5
+#define DISPLAY_TIME 6000  // Temps d'affichage de chaque titre en millisecondes
 
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R2, /* reset=*/ U8X8_PIN_NONE);
 
@@ -36,6 +39,8 @@ int passive_counter = 0;
 String API_key;
 String Device_Id;
 String Model_Id;
+
+String* titles_news = nullptr;
 
 class Eyes {
 private :
@@ -403,6 +408,60 @@ float get_distance_ultrasonic(){
   return distanceCm;
 }
 
+void display_titles() {
+    // Obtenir le tableau de titres
+    if (titles_news == nullptr){
+      titles_news = get_five_top_news();
+    }
+
+    u8g2.clearBuffer();
+    u8g2.setFlipMode(1); // Activer le mode de retournement pour inverser l'affichage
+    u8g2.enableUTF8Print();
+    u8g2.setFont(u8g2_font_ncenB08_tf);
+
+    // Constante pour la largeur de l'écran en pixels
+    const int screenWidth = 128; // Largeur de l'écran OLED
+
+    for (int i = 0; i < MAX_TITLES; i++) {
+        u8g2.clearBuffer(); // Effacer le tampon de l'écran
+        u8g2.setCursor(0, 10); // Position du curseur pour le texte
+
+        // Préparer le titre avec le préfixe "Titre X: "
+        String fullTitle = "Titre " + String(i + 1) + ": " + titles_news[i];
+        
+        // Variables pour gérer les lignes et l'espacement vertical
+        int lineHeight = 10; // Hauteur de ligne (ajustez selon la taille de police)
+        int yPosition = 10;  // Position initiale en Y
+
+        // Variable pour stocker la largeur courante du texte
+        int currentWidth = 0;
+
+        // Diviser le texte en mots pour gérer le retour à la ligne
+        char *token = strtok((char *)fullTitle.c_str(), " ");
+        while (token != nullptr) {
+            String word = String(token) + " ";
+            int wordWidth = u8g2.getStrWidth(word.c_str());
+
+            if (currentWidth + wordWidth > screenWidth) {
+                // Si le mot ne tient pas sur la ligne actuelle, aller à la ligne suivante
+                yPosition += lineHeight;
+                u8g2.setCursor(0, yPosition);
+                currentWidth = 0;
+            }
+
+            // Imprimer le mot courant et mettre à jour la largeur actuelle
+            u8g2.print(word);
+            currentWidth += wordWidth;
+
+            // Passer au mot suivant
+            token = strtok(nullptr, " ");
+        }
+
+        u8g2.sendBuffer(); // Envoyer le tampon à l'écran
+        delay(DISPLAY_TIME); // Attendre avant d'afficher le titre suivant
+    }
+}
+
 Eyes e1;
 
 void setup(void) {
@@ -419,48 +478,18 @@ void setup(void) {
 
   pinMode(BTN_PIN, INPUT);
 
-  Serial.println("Entrez le SSID de votre réseau Wifi :");
-  while (!Serial.available()) {
-    // Wait for user input
-  }
-  String ssid = Serial.readString();
-
-  Serial.println("Entrez le mot-de-passe de votre réseau Wifi :");
-  while (!Serial.available()) {
-    // Wait for user input
-  }
-  String password = Serial.readString();
-
-  Serial.println("Entrez votre clé API pour accéder à l'Assistant Google :");
-  while (!Serial.available()) {
-    // Wait for user input
-  }
-  API_key = Serial.readString();
-
-  Serial.println("Entrez le modèle de votre appareil :");
-  while (!Serial.available()) {
-    // Wait for user input
-  }
-  Model_Id = Serial.readString();
-
-
-  Serial.println("Entrez l'identifiant unique de votre appareil :");
-  while (!Serial.available()) {
-    // Wait for user input
-  }
-  Device_Id = Serial.readString();
-
-  // Utilisez les objets String directement, ou copiez leur contenu si nécessaire
-  // Exemple : utiliser les méthodes c_str() lorsqu'il est sûr que les objets String restent en scope
-  const char* ssid_cstr = ssid.c_str();
-  const char* password_cstr = password.c_str();
+  const char* ssid = get_secret(0);
+  const char* password = get_secret(1);
+  API_key = get_secret(2);
+  Model_Id = get_secret(3);
+  Device_Id = get_secret(4);
 
   // Utilisation des valeurs
-  Serial.println("SSID: " + ssid);
-  Serial.println("Password: " + password);
+  Serial.println("SSID: " + String(ssid));
+  Serial.println("Password: " + String(password));
 
   Serial.println("Connexion au réseau WiFi...");
-  WiFi.begin(ssid_cstr, password_cstr);
+  WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
@@ -475,7 +504,6 @@ void loop(void) {
 
   count_inactivity++;
   float dist = get_distance_ultrasonic();
-  Serial.println(dist);
   
   if (dist < 15.0)
   {
@@ -486,7 +514,6 @@ void loop(void) {
 
     while (digitalRead(BTN_PIN) == LOW) {
       float dist = get_distance_ultrasonic();
-      Serial.println(dist);
 
       if ((dist > 15.0)&&(passive_counter >= 20)){
         passive_counter = 0;
