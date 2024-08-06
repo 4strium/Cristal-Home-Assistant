@@ -1,0 +1,18 @@
+#!/usr/bin/expect
+
+# Récupérer les arguments
+set device_id [lindex $argv 0]
+set device_model_id [lindex $argv 1]
+set phrase [lindex $argv 2]
+
+# Lancer la commande Python
+spawn python -m googlesamples.assistant.grpc.textinput --device-id $device_id --device-model-id $device_model_id
+
+# Attendre l'invite
+expect ": "
+
+# Envoyer la phrase et appuyer sur Entrée
+send "$phrase\r"
+
+# Attendre que le processus se termine
+expect eof

@@ -7,16 +7,16 @@ PHRASE=$3
 
 # Activer l'environnement virtuel
 source ~/prog/cristal-env/bin/activate
+echo "Environnement activé."
 
-# Exécuter la commande Python avec un délai et envoyer une phrase
-(
-  # Lancer la commande Python
-  python -m googlesamples.assistant.grpc.textinput --device-id "$DEVICE_ID" --device-model-id "$DEVICE_MODEL_ID" &
-  PID=$! # Obtenir l'ID de processus de la commande
+# Obtenir la date et l'heure actuelle
+CURRENT_DATETIME=$(date '+%d-%m-%Y %H:%M:%S')
 
-  # Attendre 0,2 seconde
-  sleep 0.2
+# Construire la commande complète
+COMMAND="python -m googlesamples.assistant.grpc.textinput --device-id $DEVICE_ID --device-model-id $DEVICE_MODEL_ID"
 
-  # Envoyer la phrase au processus
-  echo "$PHRASE" > /proc/$PID/fd/0
-) # Fermer le groupe de commandes
+# Écrire la commande et la phrase dans le fichier de log avec l'horodatage
+echo "[$CURRENT_DATETIME] Command: $COMMAND, Phrase: \"$PHRASE\"" >> command_log.txt
+
+# Exécuter le script expect
+expect ./send_command.exp "$DEVICE_ID" "$DEVICE_MODEL_ID" "$PHRASE"

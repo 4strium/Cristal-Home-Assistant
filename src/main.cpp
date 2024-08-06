@@ -513,8 +513,7 @@ void loop(void) {
       delay(500);
       record_mic();
       delay(500);
-      // String word = recowav();
-      String word = "allume bureau";
+      String word = recowav();
       Serial.println(word);
       if (word == String("météo"))
         {

@@ -22,9 +22,7 @@ void exec_com_assistant(String apiKey, String deviceId, String modelId, String p
   if (httpResponseCode > 0) {
     String response = http.getString();
     Serial.println("Réponse du serveur : " + response);
-  } else {
-    Serial.println("Erreur de la requête HTTP : " + String(httpResponseCode));
   }
-
+  
   http.end();
 }
