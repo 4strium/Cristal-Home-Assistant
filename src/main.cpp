@@ -282,6 +282,7 @@ class Meteo_aff {
     }
 
     u8g2.sendBuffer();
+    u8g2.setFontDirection(0);
   }
 
   void setLocation(const char* newLocation) const {
