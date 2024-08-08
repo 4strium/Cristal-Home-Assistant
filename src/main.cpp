@@ -506,7 +506,6 @@ void loop(void) {
 
   count_inactivity++;
   float dist = get_distance_ultrasonic();
-  display_titles();
   
   if (dist < 15.0)
   {
