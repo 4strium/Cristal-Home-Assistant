@@ -416,6 +416,7 @@ void display_titles() {
 
     u8g2.clearBuffer();
     u8g2.setFlipMode(1); // Activer le mode de retournement pour inverser l'affichage
+    u8g2.setFontDirection(0);
     u8g2.enableUTF8Print();
     u8g2.setFont(u8g2_font_ncenB08_tf);
 
@@ -460,6 +461,7 @@ void display_titles() {
         u8g2.sendBuffer(); // Envoyer le tampon à l'écran
         delay(DISPLAY_TIME); // Attendre avant d'afficher le titre suivant
     }
+    u8g2.setFlipMode(0); // désactiver le mode de retournement pour inverser l'affichage
 }
 
 Eyes e1;
@@ -504,6 +506,7 @@ void loop(void) {
 
   count_inactivity++;
   float dist = get_distance_ultrasonic();
+  display_titles();
   
   if (dist < 15.0)
   {
@@ -580,9 +583,34 @@ void loop(void) {
           String input_phrase = String("set velux romain at 100%");
           exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
         }
-      else if (word == String("ferme le volet"))
+      else if (word == String("entrouvre le volet"))
         {
           String input_phrase = String("set velux romain at 50%");
+          exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
+        }
+      else if (word == String("ferme le volet"))
+        {
+          String input_phrase = String("set velux romain at 0%");
+          exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
+        }
+      else if (word == String("TF1"))
+        {
+          String input_phrase = String("tf1");
+          exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
+        }
+      else if (word == String("France 2"))
+        {
+          String input_phrase = String("france 2");
+          exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
+        }
+      else if (word == String("M6"))
+        {
+          String input_phrase = String("m6");
+          exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
+        }
+      else if (word == String("France 3"))
+        {
+          String input_phrase = String("france 3");
           exec_com_assistant(API_key,Device_Id,Model_Id,input_phrase);
         }
       else if (word == String("info")||word == String("infos"))
