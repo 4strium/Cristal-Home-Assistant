@@ -17,6 +17,10 @@ Today I decided to show you in the smallest details how I managed to design **Cr
   <img src="https://romainmellaza.fr/img/cristal-home-assistant/pres2.jpg" alt="Cristal Home Assistant">
 </p>
 
+## Project presentation
+
+<iframe width="1280" height="720" src="https://www.youtube.com/embed/M7OH803nQkw" title="DIY Home Assistant | ESP32 &amp; Linux Server | Project presentation" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 ## The necessary equipment
 
 <p align="center">
