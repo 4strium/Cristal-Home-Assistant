@@ -81,7 +81,7 @@ In my case for example, I rent a server thanks to DigitalOcean, I selected the l
 
 *Screenshot of data measured on the server I used for this project*
 
-**If you would like to see in more detail how to set up your Linux server for the voice assistant, [click here](https://romainmellaza.fr/posts/cristal-setup-server/).**
+**If you would like to see in more detail how to set up your Linux server for the voice assistant and enable the [Google Assistant](https://assistant.google.com/intl/en_en/) SDK, [click here](https://romainmellaza.fr/posts/cristal-setup-server/).**
 
 ## 3D models for those who want/can print them...
 You can print the four parts of the project, here are the 3d files, feel free to modify them as you wish! *(namely I printed it with my Ender-3 V3 SE)*
