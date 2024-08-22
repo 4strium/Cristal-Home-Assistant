@@ -19,7 +19,7 @@ Today I decided to show you in the smallest details how I managed to design **Cr
 
 ## Project presentation
 
-[![](https://img.youtube.com/vi/M7OH803nQkw/0.jpg)](https://www.youtube.com/watch?v=M7OH803nQkw)
+[![](https://github.com/4strium/Cristal-Home-Assistant/blob/main/image/youtube-thumbnail.png?raw=true)](https://www.youtube.com/watch?v=M7OH803nQkw)
 
 ## The necessary equipment
 
