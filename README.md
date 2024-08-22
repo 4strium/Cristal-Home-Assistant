@@ -4,7 +4,7 @@
   <img src="https://github.com/4strium/Cristal-Home-Assistant/blob/main/image/cover-1.png?raw=true" alt="Cristal Home Assistant logo">
 </p>
 
-# Introduction 
+## Introduction 
 This personal project is based on a simple observation: nowadays there are a significant number of voice assistants coupled with numerous tools promising hyper connectivity and boosted productivity. We therefore end up getting lost in all these opaque layers processing our personal data as well as in subscriptions that are often prohibitively expensive compared to the simplicity of the tasks that we want our electronic companion to carry out.
 
 <p align="center">
@@ -17,7 +17,7 @@ Today I decided to show you in the smallest details how I managed to design **Cr
   <img src="https://romainmellaza.fr/img/cristal-home-assistant/pres2.jpg" alt="Cristal Home Assistant">
 </p>
 
-# The necessary equipment
+## The necessary equipment
 
 <p align="center">
   <img src="https://www.gotronic.fr/ori-module-nodemcu-esp32-28407.jpg" alt="">
@@ -63,7 +63,7 @@ Today I decided to show you in the smallest details how I managed to design **Cr
 
 * A [push button](https://www.amazon.fr/s?k=push+button&__mk_fr_FR=%C3%85M%C3%85%C5%BD%C3%95%C3%91&ref=nb_sb_noss). 
 
-# A small server
+## A small server
 Unfortunately, although the esp32 is a true marvel due to the extent of its capabilities, certain actions are either not possible, or possible but within a period of time which makes use uncomfortable and not smooth.
 
 This is the case for voice recognition for example, which is therefore central to our project, which is why it is necessary to first record the audio file before transmitting it to a more powerful device so that the latter achieves recognition. But be careful by "more powerful" I don't mean a server with 32GB of ram and a premium CPU, no it's quite the opposite! You can either rent the smallest server configuration from a host, or use a Raspberry Pi at home.
@@ -83,7 +83,7 @@ In my case for example, I rent a server thanks to DigitalOcean, I selected the l
 
 **If you would like to see in more detail how to set up your Linux server for the voice assistant, [click here](https://romainmellaza.fr/posts/cristal-setup-server/).**
 
-# 3D models for those who want/can print them...
+## 3D models for those who want/can print them...
 You can print the four parts of the project, here are the 3d files, feel free to modify them as you wish! *(namely I printed it with my Ender-3 V3 SE)*
 
 <p align="center">
@@ -95,7 +95,7 @@ You can print the four parts of the project, here are the 3d files, feel free to
 * [The body that will carry all the electronics.](https://github.com/4strium/Cristal-Home-Assistant/blob/main/models/body.3mf) 
 * [The hood to make the link between the head and the body.](https://github.com/4strium/Cristal-Home-Assistant/blob/main/models/capuchon.3mf)
 
-# Wiring 
+## Wiring 
 
 Make the connections follow this:
 
@@ -133,7 +133,7 @@ Make the connections follow this:
 * OUT : GPIO 35 (ADC1_CHANNEL_7)
 * GND
 
-# Functionalities :
+## Functionalities :
 
 * If you want to see how to display live weather on screen via I2C, [click here](https://romainmellaza.fr/posts/live-weather-i2c-screen/).
 
