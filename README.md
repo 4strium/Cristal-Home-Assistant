@@ -19,7 +19,7 @@ Today I decided to show you in the smallest details how I managed to design **Cr
 
 ## Project presentation
 
-<iframe width="1280" height="720" src="https://www.youtube.com/embed/M7OH803nQkw" title="DIY Home Assistant | ESP32 &amp; Linux Server | Project presentation" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+[![](https://img.youtube.com/vi/M7OH803nQkw/0.jpg)](https://www.youtube.com/watch?v=M7OH803nQkw)
 
 ## The necessary equipment
 
