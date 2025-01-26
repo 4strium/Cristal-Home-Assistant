@@ -73,14 +73,14 @@ Unfortunately, although the esp32 is a true marvel due to the extent of its capa
 This is the case for voice recognition for example, which is therefore central to our project, which is why it is necessary to first record the audio file before transmitting it to a more powerful device so that the latter achieves recognition. But be careful by "more powerful" I don't mean a server with 32GB of ram and a premium CPU, no it's quite the opposite! You can either rent the smallest server configuration from a host, or use a Raspberry Pi at home.
 
 <p align="center">
-  <img width="30%" src="https://m.media-amazon.com/images/I/61K2IaK2b9L._AC_UF1000,1000_QL80_.jpg" alt="">
+  <img width="50%" src="https://m.media-amazon.com/images/I/61K2IaK2b9L._AC_UF1000,1000_QL80_.jpg" alt="">
 </p>
 
 In my case for example, I rent a server thanks to DigitalOcean, I selected the lowest possible configuration with only 1GB of Ram and an inefficient Intel processor. But it is more than sufficient as you can see in the graphs below, in terms of the memory or processor usage percentages with actions initiated by my custom assistant.
 
 
 <p align="center">
-  <img src="https://romainmellaza.fr/img/cristal-home-assistant/digital-ocean.png" alt="">
+  <img width="50% src="https://romainmellaza.fr/img/cristal-home-assistant/digital-ocean.png" alt="">
 </p>
 
 *Screenshot of data measured on the server I used for this project*
