@@ -1,4 +1,4 @@
-# Cristal Home Assistant
+<h1 align="center">Cristal Home Assistant</h1>
 
 <p align="center">
   <img src="https://github.com/4strium/Cristal-Home-Assistant/blob/main/image/cover-1.png?raw=true" alt="Cristal Home Assistant logo">
@@ -77,7 +77,6 @@ This is the case for voice recognition for example, which is therefore central t
 </p>
 
 In my case for example, I rent a server thanks to DigitalOcean, I selected the lowest possible configuration with only 1GB of Ram and an inefficient Intel processor. But it is more than sufficient as you can see in the graphs below, in terms of the memory or processor usage percentages with actions initiated by my custom assistant.
-
 
 <p align="center">
   <img width="50% src="https://romainmellaza.fr/img/cristal-home-assistant/digital-ocean.png" alt="">
