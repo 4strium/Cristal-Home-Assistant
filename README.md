@@ -8,13 +8,13 @@
 This personal project is based on a simple observation: nowadays there are a significant number of voice assistants coupled with numerous tools promising hyper connectivity and boosted productivity. We therefore end up getting lost in all these opaque layers processing our personal data as well as in subscriptions that are often prohibitively expensive compared to the simplicity of the tasks that we want our electronic companion to carry out.
 
 <p align="center">
-  <img src="https://romainmellaza.fr/img/cristal-home-assistant/pres1.jpg" alt="Cristal Home Assistant">
+  <img src="https://mellaza.tech/img/cristal-home-assistant/pres1.jpg" alt="Cristal Home Assistant">
 </p>
 
 Today I decided to show you in the smallest details how I managed to design **Cristal** a voice assistant which can respond to all your wishes as long as you are ready to fiddle a minimum between the hardware and the software.
 
 <p align="center">
-  <img width="30%" src="https://romainmellaza.fr/img/cristal-home-assistant/pres2.jpg" alt="Cristal Home Assistant">
+  <img width="30%" src="https://mellaza.tech/img/cristal-home-assistant/pres2.jpg" alt="Cristal Home Assistant">
 </p>
 
 ## Project presentation
@@ -79,18 +79,18 @@ This is the case for voice recognition for example, which is therefore central t
 In my case for example, I rent a server thanks to DigitalOcean, I selected the lowest possible configuration with only 1GB of Ram and an inefficient Intel processor. But it is more than sufficient as you can see in the graphs below, in terms of the memory or processor usage percentages with actions initiated by my custom assistant.
 
 <p align="center">
-  <img width="80%" src="https://romainmellaza.fr/img/cristal-home-assistant/digital-ocean.png" alt="">
+  <img width="80%" src="https://mellaza.tech/img/cristal-home-assistant/digital-ocean.png" alt="">
 </p>
 
 *Screenshot of data measured on the server I used for this project*
 
-**If you would like to see in more detail how to set up your Linux server for the voice assistant and enable the [Google Assistant](https://assistant.google.com/intl/en_en/) SDK, [click here](https://romainmellaza.fr/posts/cristal-setup-server/).**
+**If you would like to see in more detail how to set up your Linux server for the voice assistant and enable the [Google Assistant](https://assistant.google.com/intl/en_en/) SDK, [click here](https://mellaza.tech/posts/cristal-setup-server/).**
 
 ## 3D models for those who want/can print them...
 You can print the four parts of the project, here are the 3d files, feel free to modify them as you wish! *(namely I printed it with my Ender-3 V3 SE)*
 
 <p align="center">
-  <img src="https://romainmellaza.fr/img/cristal-home-assistant/printing-1.jpg" alt="">
+  <img src="https://mellaza.tech/img/cristal-home-assistant/printing-1.jpg" alt="">
 </p>
 
 * [The button to activate voice recording.](https://github.com/4strium/Cristal-Home-Assistant/blob/main/models/Bouton-Cristal-AI.3mf)
@@ -138,12 +138,12 @@ Make the connections follow this:
 
 ## Functionalities :
 
-* If you want to see how to display live weather on screen via I2C, [click here](https://romainmellaza.fr/posts/live-weather-i2c-screen/).
+* If you want to see how to display live weather on screen via I2C, [click here](https://mellaza.tech/posts/live-weather-i2c-screen/).
 
-* If you want to see how to display live date and time based on GPS coordinates (to get timezone) on an I2C screen, [click here](https://romainmellaza.fr/posts/date-time-i2c-screen/).
+* If you want to see how to display live date and time based on GPS coordinates (to get timezone) on an I2C screen, [click here](https://mellaza.tech/posts/date-time-i2c-screen/).
 
-* If you want to see how to display daily news on screen via I2C, [click here](https://romainmellaza.fr/posts/live-news-i2c-screen/).
+* If you want to see how to display daily news on screen via I2C, [click here](https://mellaza.tech/posts/live-news-i2c-screen/).
 
-* If you want to see how to record sound on microSD card via MAX9814 microphone, [click here](https://romainmellaza.fr/posts/record-sound-max9814/).
+* If you want to see how to record sound on microSD card via MAX9814 microphone, [click here](https://mellaza.tech/posts/record-sound-max9814/).
 
-* If you want to see how to keep your [API](https://en.wikipedia.org/wiki/API) identifiers secret for this ultra-connected project, [click here](https://romainmellaza.fr/posts/secure-credentials-esp32/).
+* If you want to see how to keep your [API](https://en.wikipedia.org/wiki/API) identifiers secret for this ultra-connected project, [click here](https://mellaza.tech/posts/secure-credentials-esp32/).
